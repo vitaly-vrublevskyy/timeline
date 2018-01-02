@@ -1,3 +1,6 @@
-<p>
-  builder works!
-</p>
+<div class="logger">
+  <strong>Logs:</strong>
+  <p *ngFor="let item of outputEvents" class="output-event">{{ item }}</p>
+</div>
+
+<app-timeline class="timeline"></app-timeline>
