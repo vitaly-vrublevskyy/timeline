@@ -21,6 +21,8 @@ export class BuilderComponent implements OnInit {
    */
   logs: string[] = [];
 
+  showLogs: boolean;
+
   constructor(private service: TimelineService) {
   }
 
@@ -29,9 +31,13 @@ export class BuilderComponent implements OnInit {
       .subscribe((model: TimelineDataVM) => this.timelineData = model);
   }
 
+  toggleLogs(): void {
+    this.showLogs = !this.showLogs;
+  }
+
   onToggleSelect(item: TimeEventVM): void {
     const state: string = item && item.selected ? 'Select' : 'UnSelect';
-    this.logInfo(`${state}  Event`);
+    this.logInfo(`${state} Event`);
   }
 
   onHoverEvent(item: TimeEventVM) {
@@ -39,7 +45,7 @@ export class BuilderComponent implements OnInit {
   }
 
   private logInfo(message: string) {
-    const line: string = `[INFO] - ${new Date().toTimeString()}: ${message}`;
+    const line = `[INFO] - ${new Date().toTimeString()}: ${message}`;
     this.logs.push(line);
   }
 
