@@ -31,10 +31,6 @@ export class BuilderComponent implements OnInit {
       .subscribe((model: TimelineDataVM) => this.timelineData = model);
   }
 
-  toggleLogs(): void {
-    this.showLogs = !this.showLogs;
-  }
-
   onToggleSelect(item: TimeEventVM): void {
     const state: string = item && item.selected ? 'Select' : 'UnSelect';
     this.logInfo(`${state} Event`);
