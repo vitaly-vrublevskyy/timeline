@@ -1,1 +1,35 @@
+.d3-chart {
+  width: 100%;
+  height: 120px;
+  background: #fff;
+}
+rect.selection{
+  //stroke: #5093E1;
+  fill: #E9F2FB;
+}
 
+rect.handle.handle{
+  width:1px;
+  stroke:#5093E1;
+  fill:#5093E1;
+  height: 90px;
+  y:0;
+}
+
+circle{
+  stroke: #83A2BE;
+  fill:#fff;
+  cursor: pointer;
+}
+
+.axis-x line {
+  stroke: #83A2BE;
+}
+
+.axis-x path {
+  stroke: #83A2BE;
+}
+
+.axis-x text {
+  fill: #83A2BE;
+}

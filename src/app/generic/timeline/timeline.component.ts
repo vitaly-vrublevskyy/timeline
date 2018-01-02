@@ -1,5 +1,8 @@
-import {Component, DoCheck, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation} from "@angular/core";
-import {TimeEventVM, TimelineDataVM} from "../../model/view-models";
+import {
+  Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild,
+  ViewEncapsulation
+} from '@angular/core';
+import { TimeEventVM, TimelineDataVM } from '../../model/view-models';
 import * as d3 from 'd3';
 
 @Component({
@@ -9,71 +12,140 @@ import * as d3 from 'd3';
   // According to requirements: Don’t use angular view encapsulation
   encapsulation: ViewEncapsulation.None
 })
-export class TimelineComponent implements OnInit, DoCheck {
-
-  /**
-   * INPUTS
-   * */
-  @Input() private data: TimelineDataVM;
-
-  @Input() private selection: TimeEventVM[];
-
-  /**
-   * OUTPUTS
-   * */
-
+export class TimelineComponent implements OnInit, OnChanges {
   /* Notify about Click / Unclick on event */
   @Output()
   select: EventEmitter<TimeEventVM> = new EventEmitter();
-
   /* Hover event */
   @Output()
-  hover: EventEmitter<TimeEventVM|null> = new EventEmitter();
-
+  hover: EventEmitter<TimeEventVM | null> = new EventEmitter();
+  /**
+   * OUTPUTS
+   * */
+  /**
+   * INPUTS
+   * */
+  @Input() public data: TimelineDataVM;
+  @Input() private selection: TimeEventVM[];
   @ViewChild('container')
   private chartContainer: ElementRef;
 
+  @ViewChild('svg')
+  private svgElement: ElementRef;
   /*
   * D3 related properties
   * */
   private svg: any;
-
   private chart: any; // TODO: rename timeline
-
   private width: number;
   private height: number;
+  private xScale: any;
+  private xAxis: any;
+  private brush: any;
+  private zoom: any;
+  private xAxisGroup: any;
+  private lastSelection: any[];
+  private brushGroup: any;
+  private dataGroup: any;
+  private zoomTransform: any;
+  private circles: any;
 
-  constructor() { }
+  private margin: any = {top: 0, bottom: 0, left: 0, right: 0};
+
+  constructor() {
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (this.chart) {
+      this.updateChart();
+    }
+  }
 
   ngOnInit() {
     const element = this.chartContainer.nativeElement;
+    this.width = element.offsetWidth - this.margin.left - this.margin.right;
+    this.height = element.offsetHeight - this.margin.top - this.margin.bottom;
 
-    this.svg = d3.select(element).append('svg')
+    this.svg = d3.select(this.svgElement.nativeElement)
       .attr('width', element.offsetWidth)
       .attr('height', element.offsetHeight);
 
-    const margin = 10;
     this.chart = this.svg.append('g')
       .attr('class', 'timeline')
-      .attr('transform', `translate(${margin}, ${margin})`);
+      .attr('transform', `translate(${this.margin.left + 170}, ${this.margin.top + 30})`);
 
-    this.resizeToFitContent();
+    this.xScale = d3.scaleTime()
+      .domain([this.data.timeConfig.start, this.data.timeConfig.end])
+      .range([0, this.width]);
+    this.xAxis = d3.axisBottom(this.xScale);
+    this.xAxisGroup = this.chart.append('g')
+      .attr('class', 'axis axis-x')
+      .attr('transform', `translate(0,  46)`)
+      .call(this.xAxis);
+
+    this.brushGroup = this.chart.append('g')
+      .attr('class', 'brush')
+      .attr('transform', `translate(0, 0)`);
+    this.brush = d3.brushX()
+      .extent([[0, 0], [this.width, this.height - 30]])
+      .on('end', () => {
+        if (!d3.event.sourceEvent) {
+          return;
+        }// Only transition after input.
+        if (!d3.event.selection) {
+          return;
+        }// Ignore empty selections.
+        if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') {
+          return;
+        }// ignore brush-by-zoom
+        const d0 = d3.event.selection.map(this.xScale.invert),
+          // rounded
+          d1 = d0.map(d3.timeDay.round);
+
+        const selectAll = this.dataGroup.selectAll('circle');
+
+        // selection highlights
+        if (d3.event.selection === null) {
+          selectAll.style('fill', 'inital');
+        } else {
+
+          selectAll.style('fill', (d) => {
+            console.log(d.color)
+            const b = d0[0].getTime() <= d.dateTime.getTime() && d.dateTime.getTime() <= d0[1].getTime();
+            return b ? d.color : '#fff';
+          });
+        }
+
+        this.lastSelection = d0;
+        d3.select('.brush').transition().call(d3.event.target.move, d0.map(this.xScale));
+      });
+
+    this.brushGroup.call(this.brush);
+
+    this.dataGroup = this.chart.append('g')
+      .attr('class', 'datagroup');
+
+    this.ngOnChanges(null);
   }
 
-  ngDoCheck() {
-    this.resizeToFitContent();
-  }
+  private updateChart() {
+    const points = this.data.events;
 
+    this.circles = this.dataGroup.selectAll('circle')
+      .data(points, (d) => d.id);
 
-  resizeToFitContent() {
-    const margin = 10;
-    const element = this.chartContainer.nativeElement;
-    if (this.width !== element.offsetWidth || this.height !== element.offsetHeight) {
-      this.width = element.offsetWidth;
-      this.height = element.offsetHeight;
-      this.svg
-        .attr('width', this.width)
-        .attr('height', this.height);
-    }
+    this.circles.enter()
+      .append('circle')
+      .attr('cy', (d) => {
+        return 46;
+      })
+      .attr('r', 5)
+      .attr('fill', d => d.color)
+      .merge(this.circles)
+      .attr('cx', (d: TimeEventVM) => {
+        const scalex = this.zoomTransform ? this.zoomTransform.k : 1;
+        return scalex * this.xScale(d.dateTime);
+      });
+    this.circles.exit().remove();
   }
 }

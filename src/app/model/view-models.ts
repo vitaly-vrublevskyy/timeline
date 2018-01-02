@@ -14,8 +14,7 @@ export interface TimeConfigVM {
 export interface TimeEventVM {
   id?: number;
   dateTime: Date;
-  style: string; // redundunt
-  color?: number; // #Hex
+  color?: string | number; // #Hex
   /**
    * Internal properties
    * */
