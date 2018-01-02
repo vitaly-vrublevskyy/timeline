@@ -1,6 +1,16 @@
-<div class="logger">
-  <strong>Logs:</strong>
-  <p *ngFor="let item of outputEvents" class="output-event">{{ item }}</p>
-</div>
+<div class="view-container">
+  <div class="logger">
+    <div class="trigger" title="Logger Info">
+      <img class="icon" src="/assets/drag-vertical.svg"/>
+    </div>
+    <strong>Logs:</strong>
+    <p *ngFor="let item of logs"  class="output-event">{{ item }}</p>
+  </div>
 
-<app-timeline class="timeline"></app-timeline>
+  <app-timeline
+    [data]="timelineData"
+    (select)="onToggleSelect($event)"
+    (hover)="onHoverEvent($event)"
+    class="timeline">
+  </app-timeline>
+</div>

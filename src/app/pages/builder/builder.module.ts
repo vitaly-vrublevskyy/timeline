@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { BuilderComponent } from './builder.component';
 import {BuilderRoutingModule} from './builder-routing.module';
 import {GenericModule} from "../../generic/generic.module";
+import {TimelineService} from "./service/timeline.service";
 
 @NgModule({
   imports: [
@@ -10,6 +11,7 @@ import {GenericModule} from "../../generic/generic.module";
     BuilderRoutingModule,
     GenericModule
   ],
-  declarations: [BuilderComponent]
+  declarations: [BuilderComponent],
+  providers: [TimelineService]
 })
 export class BuilderModule { }
