@@ -9,6 +9,7 @@ export class TimelineService {
   data = {
     timeZone: 'UTC',
     timeConfig: {
+      id: _.uniqueId(),
       start: new Date('2016-05-01T00:00:00.000Z'),
       end: new Date('2016-09-04T00:00:00.000Z'),
     },
