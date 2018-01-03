@@ -41,7 +41,9 @@ export class BuilderComponent implements OnInit {
   }
 
   private logInfo(message: string) {
-    const line = `[INFO] - ${new Date().toTimeString()}: ${message}`;
+    const options = {hour: 'numeric', minute: 'numeric', second: 'numeric'};
+    const timestamp = new Date().toLocaleTimeString('en-US', options);
+    const line = `[INFO] - ${timestamp}: ${message}`;
     this.logs.push(line);
   }
 

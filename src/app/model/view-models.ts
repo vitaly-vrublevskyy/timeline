@@ -10,7 +10,7 @@ export interface TimeConfigVM {
   end: Date;
 }
 
-
+// TODO: rename to TimelineEventVM
 export interface TimeEventVM {
   id?: number;
   dateTime: Date;

@@ -1,11 +1,11 @@
 import {
   Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild,
   ViewEncapsulation
-} from "@angular/core";
+} from '@angular/core';
 import { TimeEventVM, TimelineDataVM } from '../../model/view-models';
 import * as d3 from 'd3';
-import {Subscription} from "rxjs/Subscription";
-import {TimerObservable} from "rxjs/observable/TimerObservable";
+import { Subscription } from 'rxjs/Subscription';
+import { TimerObservable } from 'rxjs/observable/TimerObservable';
 
 @Component({
   selector: 'app-timeline',
@@ -19,18 +19,16 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
    * INPUTS
    * */
   @Input() public data: TimelineDataVM;
-
-  @Input() private selection: TimeEventVM[];
-  /**
-   * OUTPUTS
-   * */
   /* Notify about Click / Unclick on event */
   @Output()
   select: EventEmitter<TimeEventVM> = new EventEmitter();
+  /**
+   * OUTPUTS
+   * */
   /* Hover event */
   @Output()
   hover: EventEmitter<TimeEventVM | null> = new EventEmitter();
-
+  @Input() private selection: TimeEventVM[];
   /*
   * Access to Template
   * */
@@ -68,6 +66,59 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnInit() {
+    this.buildTimeline();
+
+    this.invalidateDisplayList();
+
+    this.addEventListeners();
+
+    // this.startPlayer(-3); // Test
+  }
+
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (this.chart) {
+      this.invalidateDisplayList();
+    }
+  }
+
+  ngOnDestroy() {
+    // Unsubscribe timer
+    this.playbackSubscription.unsubscribe();
+  }
+
+  /*
+  * Event Handlers
+  * */
+
+  onEventClick(item: TimeEventVM) {
+    item.selected = !item.selected; // Toggle
+    this.select.emit(item);
+    this.invalidateDisplayList();
+  }
+
+  private invalidateDisplayList() {
+    const points = this.data.events;
+
+    this.circles = this.dataGroup.selectAll('circle')
+      .data(points, (d) => d.id);
+
+    this.circles.enter()
+      .append('circle')
+      .attr('cy', (d) => 46)
+      .attr('r', 5)
+      .attr('fill', d => d.color)
+      .on('click', (item: TimeEventVM) => this.onEventClick(item))
+      .merge(this.circles)
+      .style('fill', d => d.selected ? d.color : '#ffffff')
+      .attr('cx', (d: TimeEventVM) => {
+        const scalex = this.zoomTransform ? this.zoomTransform.k : 1;
+        return scalex * this.xScale(d.dateTime);
+      });
+    this.circles.exit().remove();
+  }
+
+  private buildTimeline() {
     const element = this.chartContainer.nativeElement;
     this.width = element.offsetWidth - this.margin.left - this.margin.right;
     this.height = element.offsetHeight - this.margin.top - this.margin.bottom;
@@ -99,86 +150,45 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
           return;
         }// Only transition after input.
         if (!d3.event.selection) {
+          this.clearSelection();
           return;
         }// Ignore empty selections.
         if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') {
           return;
         }// ignore brush-by-zoom
-        const d0 = d3.event.selection.map(this.xScale.invert),
+        const selectionDateRange = d3.event.selection.map(this.xScale.invert),
           // rounded
-          d1 = d0.map(d3.timeDay.round);
+          d1 = selectionDateRange.map(d3.timeDay.round);
 
-        const selectAll = this.dataGroup.selectAll('circle');
+        this.updateBrushSelection(selectionDateRange);
 
-        // selection highlights
-        if (d3.event.selection === null) {
-          selectAll.style('fill', 'inital');
-        } else {
-
-          selectAll.style('fill', (d) => {
-            const b = d0[0].getTime() <= d.dateTime.getTime() && d.dateTime.getTime() <= d0[1].getTime();
-            return b ? d.color : '#fff';
-          });
-        }
-
-        this.lastSelection = d0;
-        d3.select('.brush').transition().call(d3.event.target.move, d0.map(this.xScale));
+        this.lastSelection = selectionDateRange;
+        d3.select('.brush').transition().call(d3.event.target.move, selectionDateRange.map(this.xScale));
       });
 
     this.brushGroup.call(this.brush);
 
     this.dataGroup = this.chart.append('g')
       .attr('class', 'datagroup');
-
-    this.ngOnChanges(null);
   }
 
-  highlightPoint(index: number) {
-    console.log('highlightPoint, index:', index);
-    // TODO: highlight logic
+  private addEventListeners() {
+    // TODO: click / mouse over / out
+
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (this.chart) {
-      this.updateChart();
-    }
-  }
 
-  ngOnDestroy() {
-    // Unsubscribe timer
-    this.playbackSubscription.unsubscribe();
-  }
-
-  private updateChart() {
-    const points = this.data.events;
-
-    this.circles = this.dataGroup.selectAll('circle')
-      .data(points, (d) => d.id);
-
-    this.circles.enter()
-      .append('circle')
-      .attr('cy', (d) => 46)
-      .attr('r', 5)
-      .attr('fill', d => d.color)
-      .merge(this.circles)
-      .attr('cx', (d: TimeEventVM) => {
-        const scalex = this.zoomTransform ? this.zoomTransform.k : 1;
-        return scalex * this.xScale(d.dateTime);
-      });
-    this.circles.exit().remove();
-  }
-
-/**
-  1. x(3)
-  2. x(2.5)
-  3. x(2)
-  4. x(1.5)
-  5. x(1) - default
-  6. x(-1.5)
-  7. x(-2)
-  8. x(-2.5)
-  9. x(-3)
- **/
+  /**
+   1. x(3)
+   2. x(2.5)
+   3. x(2)
+   4. x(1.5)
+   5. x(1) - default
+   6. x(-1.5)
+   7. x(-2)
+   8. x(-2.5)
+   9. x(-3)
+   **/
   private startPlayer(speed: number = 1) {
     if (speed < 0) {
       speed = Math.abs(1 / speed);
@@ -191,5 +201,29 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
     this.playbackSubscription = TimerObservable.create(0, period)
       .take(times)
       .subscribe(t => this.highlightPoint(t));
+  }
+
+
+  private highlightPoint(index: number) {
+    console.log('highlightPoint, index:', index, this.circles);
+    // TODO: highlight logic
+  }
+
+  private clearSelection() {
+    this.data.events.forEach((d) => {
+      d.selected = false;
+    });
+    this.invalidateDisplayList();
+  }
+
+  private updateBrushSelection(dateRange: Date[]) {
+    const [start, end] = dateRange.map(a => a.getTime());
+
+    this.data.events.forEach((d) => {
+      d.selected = start <= d.dateTime.getTime()
+        && d.dateTime.getTime() <= end;
+    });
+
+    this.invalidateDisplayList();
   }
 }

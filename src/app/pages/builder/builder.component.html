@@ -1,13 +1,15 @@
 <div class="view-container">
+  <!-- Logger -->
   <div [class.opened]="showLogs" class="logger">
-    <div class="trigger" title="Logger Info">
-      <img (click)="showLogs = !showLogs" class="icon" src="/assets/drag-vertical.svg"/>
+    <div (click)="showLogs = !showLogs" class="trigger" title="Logger Info">
+      <img  class="icon" src="/assets/drag-vertical.svg"/>
     </div>
     <div class="scroll-content">
       <p *ngFor="let item of logs"  class="output-event">{{ item }}</p>
     </div>
   </div>
 
+  <!-- Timeline Component -->
   <app-timeline
     [data]="timelineData"
     (select)="onToggleSelect($event)"
