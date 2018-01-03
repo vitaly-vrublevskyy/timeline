@@ -13,20 +13,25 @@ import * as d3 from 'd3';
   encapsulation: ViewEncapsulation.None
 })
 export class TimelineComponent implements OnInit, OnChanges {
+  /**
+   * INPUTS
+   * */
+  @Input() public data: TimelineDataVM;
+
+  @Input() private selection: TimeEventVM[];
+  /**
+   * OUTPUTS
+   * */
   /* Notify about Click / Unclick on event */
   @Output()
   select: EventEmitter<TimeEventVM> = new EventEmitter();
   /* Hover event */
   @Output()
   hover: EventEmitter<TimeEventVM | null> = new EventEmitter();
-  /**
-   * OUTPUTS
-   * */
-  /**
-   * INPUTS
-   * */
-  @Input() public data: TimelineDataVM;
-  @Input() private selection: TimeEventVM[];
+
+  /*
+  * Access to Template
+  * */
   @ViewChild('container')
   private chartContainer: ElementRef;
 
@@ -53,12 +58,6 @@ export class TimelineComponent implements OnInit, OnChanges {
   private margin: any = {top: 0, bottom: 0, left: 0, right: 0};
 
   constructor() {
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (this.chart) {
-      this.updateChart();
-    }
   }
 
   ngOnInit() {
@@ -110,7 +109,6 @@ export class TimelineComponent implements OnInit, OnChanges {
         } else {
 
           selectAll.style('fill', (d) => {
-            console.log(d.color)
             const b = d0[0].getTime() <= d.dateTime.getTime() && d.dateTime.getTime() <= d0[1].getTime();
             return b ? d.color : '#fff';
           });
@@ -126,6 +124,12 @@ export class TimelineComponent implements OnInit, OnChanges {
       .attr('class', 'datagroup');
 
     this.ngOnChanges(null);
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (this.chart) {
+      this.updateChart();
+    }
   }
 
   private updateChart() {
