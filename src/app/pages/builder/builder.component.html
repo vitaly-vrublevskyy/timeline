@@ -13,7 +13,8 @@
   <app-timeline
     [data]="timelineData"
     (select)="onToggleSelect($event)"
-    (hover)="onHoverEvent($event)"
+    (hoverIn)="onHoverInEvent($event)"
+    (hoverOut)="onHoverOutEvent($event)"
     class="timeline">
   </app-timeline>
 </div>

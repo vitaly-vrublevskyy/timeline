@@ -11,24 +11,30 @@ import { TimerObservable } from 'rxjs/observable/TimerObservable';
   selector: 'app-timeline',
   templateUrl: './timeline.component.html',
   styleUrls: ['./timeline.component.scss'],
-  // According to requirements: Don’t use angular view encapsulation
   encapsulation: ViewEncapsulation.None
 })
 export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
   /**
-   * INPUTS
+   * Inputs
    * */
   @Input() public data: TimelineDataVM;
-  /* Notify about Click / Unclick on event */
+
+  @Input() private selection: TimeEventVM[];
+
+  /**
+   * Outputs
+   * */
+
+  /* Notify about Click / Unclick */
   @Output()
   select: EventEmitter<TimeEventVM> = new EventEmitter();
-  /**
-   * OUTPUTS
-   * */
-  /* Hover event */
+
   @Output()
-  hover: EventEmitter<TimeEventVM | null> = new EventEmitter();
-  @Input() private selection: TimeEventVM[];
+  hoverIn: EventEmitter<TimeEventVM> = new EventEmitter();
+
+  @Output()
+  hoverOut: EventEmitter<TimeEventVM> = new EventEmitter();
+
   /*
   * Access to Template
   * */
@@ -41,7 +47,7 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
   * D3 related properties
   * */
   private svg: any;
-  private chart: any; // TODO: rename timeline
+  private timeline: any;
   private width: number;
   private height: number;
   private xScale: any;
@@ -70,14 +76,12 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
 
     this.invalidateDisplayList();
 
-    this.addEventListeners();
-
     // this.startPlayer(-3); // Test
   }
 
 
   ngOnChanges(changes: SimpleChanges): void {
-    if (this.chart) {
+    if (this.timeline) {
       this.invalidateDisplayList();
     }
   }
@@ -87,15 +91,6 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
     this.playbackSubscription.unsubscribe();
   }
 
-  /*
-  * Event Handlers
-  * */
-
-  onEventClick(item: TimeEventVM) {
-    item.selected = !item.selected; // Toggle
-    this.select.emit(item);
-    this.invalidateDisplayList();
-  }
 
   private invalidateDisplayList() {
     const points = this.data.events;
@@ -108,7 +103,9 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
       .attr('cy', (d) => 46)
       .attr('r', 5)
       .attr('fill', d => d.color)
-      .on('click', (item: TimeEventVM) => this.onEventClick(item))
+      .on('click', (item: TimeEventVM) => this.handleClick(item))
+      .on('mouseover', (item: TimeEventVM) => this.handleMouseOver(item))
+      .on('mouseout', (item: TimeEventVM) => this.handleMouseOut(item))
       .merge(this.circles)
       .style('fill', d => d.selected ? d.color : '#ffffff')
       .attr('cx', (d: TimeEventVM) => {
@@ -127,7 +124,7 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
       .attr('width', element.offsetWidth)
       .attr('height', element.offsetHeight);
 
-    this.chart = this.svg.append('g')
+    this.timeline = this.svg.append('g')
       .attr('class', 'timeline')
       .attr('transform', `translate(${this.margin.left + 170}, ${this.margin.top + 30})`);
 
@@ -135,12 +132,12 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
       .domain([this.data.timeConfig.start, this.data.timeConfig.end])
       .range([0, this.width]);
     this.xAxis = d3.axisBottom(this.xScale);
-    this.xAxisGroup = this.chart.append('g')
+    this.xAxisGroup = this.timeline.append('g')
       .attr('class', 'axis axis-x')
       .attr('transform', `translate(0,  46)`)
       .call(this.xAxis);
 
-    this.brushGroup = this.chart.append('g')
+    this.brushGroup = this.timeline.append('g')
       .attr('class', 'brush')
       .attr('transform', `translate(0, 0)`);
     this.brush = d3.brushX()
@@ -168,15 +165,28 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
 
     this.brushGroup.call(this.brush);
 
-    this.dataGroup = this.chart.append('g')
+    this.dataGroup = this.timeline.append('g')
       .attr('class', 'datagroup');
   }
 
-  private addEventListeners() {
-    // TODO: click / mouse over / out
 
+  /*
+  * Event Handlers
+  * */
+
+  private handleClick(item: TimeEventVM) {
+    item.selected = !item.selected; // Toggle
+    this.select.emit(item);
+    this.invalidateDisplayList();
   }
 
+  private handleMouseOver(item: TimeEventVM) {
+    this.hoverIn.emit(item);
+  }
+
+  private handleMouseOut(item: TimeEventVM) {
+    this.hoverOut.emit(item);
+  }
 
   /**
    1. x(3)

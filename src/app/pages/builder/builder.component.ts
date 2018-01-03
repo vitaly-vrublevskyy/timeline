@@ -39,8 +39,12 @@ export class BuilderComponent implements OnInit {
     this.logInfo(`${state} Event: ${item.id}`);
   }
 
-  onHoverEvent(item: TimeEventVM) {
-    this.logInfo(`${item}  Event: ${item.id}`);
+  onHoverInEvent(item: TimeEventVM) {
+    this.logInfo(`Hover In: ${item.id}`);
+  }
+
+  onHoverOutEvent(item: TimeEventVM) {
+    this.logInfo(`Hover Out: ${item.id}`);
   }
 
   private logInfo(message: string) {
