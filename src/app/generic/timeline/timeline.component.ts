@@ -1,9 +1,11 @@
 import {
-  Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild,
+  Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild,
   ViewEncapsulation
-} from '@angular/core';
+} from "@angular/core";
 import { TimeEventVM, TimelineDataVM } from '../../model/view-models';
 import * as d3 from 'd3';
+import {Subscription} from "rxjs/Subscription";
+import {TimerObservable} from "rxjs/observable/TimerObservable";
 
 @Component({
   selector: 'app-timeline',
@@ -12,7 +14,7 @@ import * as d3 from 'd3';
   // According to requirements: Don’t use angular view encapsulation
   encapsulation: ViewEncapsulation.None
 })
-export class TimelineComponent implements OnInit, OnChanges {
+export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
   /**
    * INPUTS
    * */
@@ -56,6 +58,11 @@ export class TimelineComponent implements OnInit, OnChanges {
   private circles: any;
 
   private margin: any = {top: 0, bottom: 0, left: 0, right: 0};
+
+  /**
+   * Player related properties
+   * */
+  private playbackSubscription: Subscription;
 
   constructor() {
   }
@@ -126,10 +133,20 @@ export class TimelineComponent implements OnInit, OnChanges {
     this.ngOnChanges(null);
   }
 
+  highlightPoint(index: number) {
+    console.log('highlightPoint, index:', index);
+    // TODO: highlight logic
+  }
+
   ngOnChanges(changes: SimpleChanges): void {
     if (this.chart) {
       this.updateChart();
     }
+  }
+
+  ngOnDestroy() {
+    // Unsubscribe timer
+    this.playbackSubscription.unsubscribe();
   }
 
   private updateChart() {
@@ -140,9 +157,7 @@ export class TimelineComponent implements OnInit, OnChanges {
 
     this.circles.enter()
       .append('circle')
-      .attr('cy', (d) => {
-        return 46;
-      })
+      .attr('cy', (d) => 46)
       .attr('r', 5)
       .attr('fill', d => d.color)
       .merge(this.circles)
@@ -151,5 +166,16 @@ export class TimelineComponent implements OnInit, OnChanges {
         return scalex * this.xScale(d.dateTime);
       });
     this.circles.exit().remove();
+  }
+
+  private startPlayer(speed: number = 1000) {
+    if (this.playbackSubscription) {
+      this.playbackSubscription.unsubscribe();
+    }
+
+    const times: number = this.data.events.length;
+    this.playbackSubscription = TimerObservable.create(0, speed)
+      .take(times)
+      .subscribe(t => this.highlightPoint(t));
   }
 }

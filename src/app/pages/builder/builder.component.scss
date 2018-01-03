@@ -12,13 +12,16 @@ $ease-out-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1) !default;
     position: relative;
     border: 1px solid beige;
     height: 0px;
+    font-family: Arial;
+    padding: 0 10px;
+    opacity: .5;
     transition: {
       duration: $ease-out-duration;
       timing-function: $ease-out-timing-function;
       property: transform, height;
     }
     &.opened {
-      height: 370px;
+      height: 200px;
     }
 
     .trigger {
