@@ -1,6 +1,6 @@
 import {Component, ElementRef, OnInit, ViewChild, ViewEncapsulation} from "@angular/core";
 import {TimelineService} from "./service/timeline.service";
-import {TimeEventVM, TimelineDataVM} from "../../model/view-models";
+import {TimelineEventVM, TimelineDataVM} from "../../model/view-models";
 
 @Component({
   selector: 'app-builder',
@@ -34,16 +34,16 @@ export class BuilderComponent implements OnInit {
       .subscribe((model: TimelineDataVM) => this.timelineData = model);
   }
 
-  onToggleSelect(item: TimeEventVM): void {
+  onToggleSelect(item: TimelineEventVM): void {
     const state: string = item && item.selected ? 'Select' : 'UnSelect';
     this.logInfo(`${state} Event: ${item.id}`);
   }
 
-  onHoverInEvent(item: TimeEventVM) {
+  onHoverInEvent(item: TimelineEventVM) {
     this.logInfo(`Hover In: ${item.id}`);
   }
 
-  onHoverOutEvent(item: TimeEventVM) {
+  onHoverOutEvent(item: TimelineEventVM) {
     this.logInfo(`Hover Out: ${item.id}`);
   }
 

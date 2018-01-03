@@ -2,7 +2,7 @@ import {
   Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild,
   ViewEncapsulation
 } from '@angular/core';
-import { TimeEventVM, TimelineDataVM } from '../../model/view-models';
+import { TimelineEventVM, TimelineDataVM } from '../../model/view-models';
 import * as d3 from 'd3';
 import { Subscription } from 'rxjs/Subscription';
 import { TimerObservable } from 'rxjs/observable/TimerObservable';
@@ -19,7 +19,7 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
    * */
   @Input() public data: TimelineDataVM;
 
-  @Input() private selection: TimeEventVM[];
+  @Input() private selection: TimelineEventVM[];
 
   /**
    * Outputs
@@ -27,13 +27,13 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
 
   /* Notify about Click / Unclick */
   @Output()
-  select: EventEmitter<TimeEventVM> = new EventEmitter();
+  select: EventEmitter<TimelineEventVM> = new EventEmitter();
 
   @Output()
-  hoverIn: EventEmitter<TimeEventVM> = new EventEmitter();
+  hoverIn: EventEmitter<TimelineEventVM> = new EventEmitter();
 
   @Output()
-  hoverOut: EventEmitter<TimeEventVM> = new EventEmitter();
+  hoverOut: EventEmitter<TimelineEventVM> = new EventEmitter();
 
   /*
   * Access to Template
@@ -103,12 +103,12 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
       .attr('cy', (d) => 46)
       .attr('r', 5)
       .attr('fill', d => d.color)
-      .on('click', (item: TimeEventVM) => this.handleClick(item))
-      .on('mouseover', (item: TimeEventVM) => this.handleMouseOver(item))
-      .on('mouseout', (item: TimeEventVM) => this.handleMouseOut(item))
+      .on('click', (item: TimelineEventVM) => this.handleClick(item))
+      .on('mouseover', (item: TimelineEventVM) => this.handleMouseOver(item))
+      .on('mouseout', (item: TimelineEventVM) => this.handleMouseOut(item))
       .merge(this.circles)
       .style('fill', d => d.selected ? d.color : '#ffffff')
-      .attr('cx', (d: TimeEventVM) => {
+      .attr('cx', (d: TimelineEventVM) => {
         const scalex = this.zoomTransform ? this.zoomTransform.k : 1;
         return scalex * this.xScale(d.dateTime);
       });
@@ -174,17 +174,17 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
   * Event Handlers
   * */
 
-  private handleClick(item: TimeEventVM) {
+  private handleClick(item: TimelineEventVM) {
     item.selected = !item.selected; // Toggle
     this.select.emit(item);
     this.invalidateDisplayList();
   }
 
-  private handleMouseOver(item: TimeEventVM) {
+  private handleMouseOver(item: TimelineEventVM) {
     this.hoverIn.emit(item);
   }
 
-  private handleMouseOut(item: TimeEventVM) {
+  private handleMouseOut(item: TimelineEventVM) {
     this.hoverOut.emit(item);
   }
 
@@ -215,7 +215,7 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
 
 
   private highlightPoint(index: number) {
-    this.data.events.forEach((item: TimeEventVM, i: number) => item.selected = i === index);
+    this.data.events.forEach((item: TimelineEventVM, i: number) => item.selected = i === index);
     this.invalidateDisplayList();
     if (index > 0) {
       // Unselect prev

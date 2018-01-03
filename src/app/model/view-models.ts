@@ -1,6 +1,6 @@
 export interface TimelineDataVM {
   timeConfig: TimeConfigVM;
-  events: TimeEventVM[];
+  events: TimelineEventVM[];
   timeZone: string; // moment.Timezone
 }
 
@@ -10,8 +10,7 @@ export interface TimeConfigVM {
   end: Date;
 }
 
-// TODO: rename to TimelineEventVM
-export interface TimeEventVM {
+export interface TimelineEventVM {
   id?: number;
   dateTime: Date;
   color?: string | number; // #Hex
