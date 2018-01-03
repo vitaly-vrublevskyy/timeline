@@ -4,7 +4,7 @@
     <div (click)="showLogs = !showLogs" class="trigger" title="Logger Info">
       <img  class="icon" src="/assets/drag-vertical.svg"/>
     </div>
-    <div class="scroll-content">
+    <div #scrollContent class="scroll-content">
       <p *ngFor="let item of logs"  class="output-event">{{ item }}</p>
     </div>
   </div>

@@ -3,18 +3,25 @@
   height: 120px;
   background: #fff;
 }
-rect.selection{
-  //stroke: #5093E1;
-  fill: #E9F2FB;
+
+rect {
+  cursor: default;
+
+  &.selection{
+    //stroke: #5093E1;
+    fill: #E9F2FB;
+  }
+
+  &.handle.handle{
+    width:1px;
+    stroke:#5093E1;
+    fill:#5093E1;
+    height: 90px;
+    y:0;
+  }
 }
 
-rect.handle.handle{
-  width:1px;
-  stroke:#5093E1;
-  fill:#5093E1;
-  height: 90px;
-  y:0;
-}
+
 
 circle{
   stroke: #83A2BE;

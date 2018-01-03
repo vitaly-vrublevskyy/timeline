@@ -197,16 +197,24 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
       this.playbackSubscription.unsubscribe();
     }
     const period = 1000 / speed;
-    const times: number = this.data.events.length;
+    const times: number = this.data.events.length + 1;
     this.playbackSubscription = TimerObservable.create(0, period)
       .take(times)
-      .subscribe(t => this.highlightPoint(t));
+      .subscribe(index => this.highlightPoint(index));
   }
 
 
   private highlightPoint(index: number) {
-    console.log('highlightPoint, index:', index, this.circles);
-    // TODO: highlight logic
+    this.data.events.forEach((item: TimeEventVM, i: number) => item.selected = i === index);
+    this.invalidateDisplayList();
+    if (index > 0) {
+      // Unselect prev
+      this.select.emit(this.data.events[index - 1]);
+    }
+    if (index < this.data.events.length) {
+      // Select current item
+      this.select.emit(this.data.events[index]);
+    }
   }
 
   private clearSelection() {

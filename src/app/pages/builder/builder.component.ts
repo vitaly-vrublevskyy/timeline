@@ -1,4 +1,4 @@
-import {Component, OnInit, ViewEncapsulation} from "@angular/core";
+import {Component, ElementRef, OnInit, ViewChild, ViewEncapsulation} from "@angular/core";
 import {TimelineService} from "./service/timeline.service";
 import {TimeEventVM, TimelineDataVM} from "../../model/view-models";
 
@@ -19,9 +19,12 @@ export class BuilderComponent implements OnInit {
   /**
    * Logger Info
    */
+  showLogs: boolean;
+
   logs: string[] = [];
 
-  showLogs: boolean;
+  @ViewChild('scrollContent') private scrollContainer: ElementRef;
+
 
   constructor(private service: TimelineService) {
   }
@@ -33,11 +36,11 @@ export class BuilderComponent implements OnInit {
 
   onToggleSelect(item: TimeEventVM): void {
     const state: string = item && item.selected ? 'Select' : 'UnSelect';
-    this.logInfo(`${state} Event`);
+    this.logInfo(`${state} Event: ${item.id}`);
   }
 
   onHoverEvent(item: TimeEventVM) {
-    this.logInfo(`${item}  Event`);
+    this.logInfo(`${item}  Event: ${item.id}`);
   }
 
   private logInfo(message: string) {
@@ -45,6 +48,13 @@ export class BuilderComponent implements OnInit {
     const timestamp = new Date().toLocaleTimeString('en-US', options);
     const line = `[INFO] - ${timestamp}: ${message}`;
     this.logs.push(line);
+    this.scrollToBottom();
+  }
+
+  private scrollToBottom(): void {
+    setTimeout(() => {
+      this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
+    }, 0);
   }
 
 }
