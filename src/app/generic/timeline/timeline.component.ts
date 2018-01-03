@@ -168,13 +168,27 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
     this.circles.exit().remove();
   }
 
-  private startPlayer(speed: number = 1000) {
+/**
+  1. x(3)
+  2. x(2.5)
+  3. x(2)
+  4. x(1.5)
+  5. x(1) - default
+  6. x(-1.5)
+  7. x(-2)
+  8. x(-2.5)
+  9. x(-3)
+ **/
+  private startPlayer(speed: number = 1) {
+    if (speed < 0) {
+      speed = Math.abs( 1 / speed );
+    }
     if (this.playbackSubscription) {
       this.playbackSubscription.unsubscribe();
     }
 
     const times: number = this.data.events.length;
-    this.playbackSubscription = TimerObservable.create(0, speed)
+    this.playbackSubscription = TimerObservable.create(0, speed * 1000)
       .take(times)
       .subscribe(t => this.highlightPoint(t));
   }
