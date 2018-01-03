@@ -182,10 +182,12 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
 
   private handleMouseOver(item: TimelineEventVM) {
     this.hoverIn.emit(item);
+    // TODO: indicate visualyy
   }
 
   private handleMouseOut(item: TimelineEventVM) {
     this.hoverOut.emit(item);
+    // TODO: indicate visualyy
   }
 
   /**
