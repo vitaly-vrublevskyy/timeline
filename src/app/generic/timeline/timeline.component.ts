@@ -107,7 +107,12 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
       .on('mouseover', (item: TimelineEventVM) => this.handleMouseOver(item))
       .on('mouseout', (item: TimelineEventVM) => this.handleMouseOut(item))
       .merge(this.circles)
-      .style('fill', d => d.selected ? d.color : '#ffffff')
+      .style('fill', d => {
+        if (d.selected || d.hovered) {
+          return d.hovered ? 'gray' : d.color;
+        }
+        return '#ffffff';
+      })
       .attr('cx', (d: TimelineEventVM) => {
         const scalex = this.zoomTransform ? this.zoomTransform.k : 1;
         return scalex * this.xScale(d.dateTime);
@@ -181,13 +186,15 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
   }
 
   private handleMouseOver(item: TimelineEventVM) {
+    item.hovered = true;
     this.hoverIn.emit(item);
-    // TODO: indicate visualyy
+    this.invalidateDisplayList();
   }
 
   private handleMouseOut(item: TimelineEventVM) {
+    item.hovered = false;
     this.hoverOut.emit(item);
-    // TODO: indicate visualyy
+    this.invalidateDisplayList();
   }
 
   /**
