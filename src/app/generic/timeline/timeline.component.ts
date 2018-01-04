@@ -1,8 +1,8 @@
 import {
-  Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild,
+  Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild,
   ViewEncapsulation
 } from '@angular/core';
-import { TimelineEventVM, TimelineDataVM } from '../../model/view-models';
+import { TimelineDataVM, TimelineEventVM } from '../../model/view-models';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
 
@@ -22,23 +22,18 @@ export class TimelineComponent implements OnInit, OnChanges {
   @Input() public data: TimelineDataVM;
 
   // TODO: collection of grouped items by some range
-
-  @Input() private selection: TimelineEventVM[];
-
-  /**
-   * Outputs
-   * */
-
   /* Notify about Click / Unclick */
   @Output()
   select: EventEmitter<TimelineEventVM> = new EventEmitter();
 
+  /**
+   * Outputs
+   * */
   @Output()
   hoverIn: EventEmitter<TimelineEventVM> = new EventEmitter();
-
   @Output()
   hoverOut: EventEmitter<TimelineEventVM> = new EventEmitter();
-
+  @Input() private selection: TimelineEventVM[];
   /*
   * Access to View Template
   * */
@@ -64,6 +59,7 @@ export class TimelineComponent implements OnInit, OnChanges {
   private dataGroup: any;
   private zoomTransform: any;
   private circles: any;
+  private tooltip: any;
 
   private margin: any = {top: 0, bottom: 0, left: 0, right: 0};
 
@@ -133,7 +129,24 @@ export class TimelineComponent implements OnInit, OnChanges {
     this.invalidateDisplayList();
   }
 
+  /*
+  * Event Handlers
+  * */
+  highlightPoint(index: number) {
+    this.data.events.forEach((item: TimelineEventVM, i: number) => item.selected = i === index);
 
+    this.invalidateDisplayList();
+
+    // UnSelect prev
+    if (index > 0) {
+      this.select.emit(this.data.events[index - 1]);
+    }
+    // Select current item
+    if (index < this.data.events.length) {
+      this.select.emit(this.data.events[index]);
+    }
+    // TODO: indicate and animate active point
+  }
 
   private buildTimeline() {
     const element = this.chartContainer.nativeElement;
@@ -144,9 +157,14 @@ export class TimelineComponent implements OnInit, OnChanges {
       .attr('width', element.offsetWidth)
       .attr('height', element.offsetHeight);
 
+    // Define the div for the tooltip
+    this.tooltip = d3.select('body').append('div')
+      .attr('class', 'tooltip')
+      .style('opacity', 0);
+
     this.timeline = this.svg.append('g')
       .attr('class', 'timeline')
-      .attr('transform', `translate(${this.margin.left}, ${this.margin.top + 15})`);
+      .attr('transform', `translate(${this.margin.left}, ${this.margin.top + 30})`);
 
     this.xScale = d3.scaleTime()
       .domain([this.data.timeConfig.start, this.data.timeConfig.end])
@@ -161,29 +179,85 @@ export class TimelineComponent implements OnInit, OnChanges {
       .attr('class', 'brush')
       .attr('transform', `translate(0, 0)`);
     this.brush = d3.brushX()
-      .extent([[0, 0], [this.width, this.height - 30]])
+      .handleSize(1.5)
+      .extent([[0, 0], [this.width, this.height-30]])
+      .filter(() => {
+        // Brush only without [Ctlr]
+        return !d3.event.ctrlKey;
+      })
       .on('end', () => {
         if (!d3.event.sourceEvent) {
           return;
         }// Only transition after input.
-        if (!d3.event.selection) {
-          this.clearSelection();
-          return;
-        }// Ignore empty selections.
         if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') {
           return;
         }// ignore brush-by-zoom
-        const selectionDateRange = d3.event.selection.map(this.xScale.invert),
+        if (!d3.event.selection) {
+          // this.clearSelection();
+          return;
+        }// Ignore empty selections.
+
+        const rescaledX = this.zoomTransform ?
+          this.zoomTransform.rescaleX(this.xScale)
+          : this.xScale;
+
+        const selectionDateRange = d3.event.selection.map(rescaledX.invert),
           // rounded
           d1 = selectionDateRange.map(d3.timeDay.round);
 
         this.updateBrushSelection(selectionDateRange);
 
         this.lastSelection = selectionDateRange;
-        d3.select('.brush').transition().call(d3.event.target.move, selectionDateRange.map(this.xScale));
+        d3.select('.brush').transition().call(d3.event.target.move, d3.event.selection);
       });
 
     this.brushGroup.call(this.brush);
+
+    this.zoom = d3.zoom()
+      .filter(() => {
+        // Zoom only with [Ctlr]
+        return d3.event.ctrlKey;
+      })
+      .scaleExtent([1, 5])
+      // .on('zoom', null)
+      // .translateExtent([[-100, 0], [this.width + 90, 0]])
+      .on('zoom', () => {
+        if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') {
+          return;
+        }
+        const selection = d3.brushSelection(d3.select('.brush').node());
+
+        this.zoomTransform = d3.event.transform;
+
+        const rescaled = this.zoomTransform.rescaleX(this.xScale);
+
+
+        this.dataGroup
+          .attr('transform', `translate(${this.zoomTransform.x}, 0) scale(1,1)`);
+
+        this.xAxisGroup
+          .call(this.xAxis.scale(d3.event.transform.rescaleX(this.xScale)));
+
+        // this.xScale = rescaled;
+
+        if (selection) {
+
+          console.log(selection, this.lastSelection.map(rescaled));
+          d3.select('.brush').call(this.brush.move,
+            this.lastSelection.map(rescaled));
+        }
+
+
+        // this.brushGroup.call(this.brush.move, null);
+        this.invalidateDisplayList();
+
+      });
+
+    this.svg.call(this.zoom);
+
+
+    this.brushGroup.call(this.brush);
+
 
     this.dataGroup = this.timeline.append('g')
       .attr('class', 'datagroup');
@@ -222,26 +296,6 @@ export class TimelineComponent implements OnInit, OnChanges {
     this.circles.exit().remove();
   }
 
-
-  /*
-  * Event Handlers
-  * */
-  highlightPoint(index: number) {
-    this.data.events.forEach((item: TimelineEventVM, i: number) => item.selected = i === index);
-
-    this.invalidateDisplayList();
-
-    // UnSelect prev
-    if (index > 0) {
-      this.select.emit(this.data.events[index - 1]);
-    }
-    // Select current item
-    if (index < this.data.events.length) {
-      this.select.emit(this.data.events[index]);
-    }
-    // TODO: indicate and animate active point
-  }
-
   private handleClick(item: TimelineEventVM) {
     item.selected = !item.selected; // Toggle
     item.hovered = false;
@@ -253,14 +307,29 @@ export class TimelineComponent implements OnInit, OnChanges {
     item.hovered = true;
     this.hoverIn.emit(item);
     this.invalidateDisplayList();
-    // TODO: show tooltip
+
+    // show tooltip
+    this.tooltip
+      .transition()
+      .duration(200)
+      .style('opacity', .9);
+
+    const options = {hour: 'numeric', minute: 'numeric', second: 'numeric'};
+    this.tooltip
+      .html(`${item.dateTime.toLocaleTimeString('en-US', options)}<br/>ID:${item.id}`)
+      .style('left', (d3.event.pageX) + 'px')
+      .style('top', (d3.event.pageY - 55) + 'px');
   }
 
   private handleMouseOut(item: TimelineEventVM) {
     item.hovered = false;
     this.hoverOut.emit(item);
     this.invalidateDisplayList();
-    // TODO: hide tooltip
+    // hide tooltip
+    this.tooltip
+      .transition()
+      .duration(500)
+      .style('opacity', 0);
   }
 
 

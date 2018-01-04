@@ -26,7 +26,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   /*
   * Current playback needle index
   * */
-  private needleIndex = -1; // Getter
+  needleIndex = -1; // TODO:  Getter base on first selected point
 
   /**
    * Current speed index
