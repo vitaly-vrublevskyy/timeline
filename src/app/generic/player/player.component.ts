@@ -1,8 +1,8 @@
-import {Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewEncapsulation} from "@angular/core";
+import {Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import * as d3 from 'd3';
-import {TimelineEventVM} from "../../model/view-models";
-import {TimerObservable} from "rxjs/observable/TimerObservable";
-import {Subscription} from "rxjs/Subscription";
+import {TimelineEventVM} from '../../model/view-models';
+import {TimerObservable} from 'rxjs/observable/TimerObservable';
+import {Subscription} from 'rxjs/Subscription';
 
 @Component({
   selector: 'app-player',
@@ -21,20 +21,18 @@ export class PlayerComponent implements OnInit, OnDestroy {
   @Output()
   changeCursor: EventEmitter<number> = new EventEmitter<number>();
 
-  /**
-   1. x(3)
-   2. x(2.5)
-   3. x(2)
-   4. x(1.5)
-   5. x(1) - default
-   6. x(-1.5)
-   7. x(-2)
-   8. x(-2.5)
-   9. x(-3)
-   **/
-  speed: number;
-
   isPlaying: boolean;
+
+  /**
+   * Current speed index
+   * */
+  speedIndex: number;
+
+  private speedMultipliersList: number[] = [-3, -2.5, -2, -1.5, 1, 1.5, 2, 2.5, 3];
+
+  get speed(): number {
+    return this.speedMultipliersList[this.speedIndex];
+  }
 
   /**
    * Player related properties
@@ -44,7 +42,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
   constructor() { }
 
   ngOnInit() {
-    this.speed = 1;
+    this.speedIndex = 4;
   }
 
   ngOnDestroy() {
@@ -77,4 +75,19 @@ export class PlayerComponent implements OnInit, OnDestroy {
       .take(times)
       .subscribe(index => this.changeCursor.emit(index));
   }
+
+  increaseSpeed(): void {
+    if (this.speedIndex < this.events.length) {
+      this.speedIndex ++;
+    }
+    // TODO: invalidate current timer
+  }
+
+  decreaseSpeed(): void {
+    if (this.speedIndex > 0) {
+      this.speedIndex --;
+    }
+    // TODO: invalidate current timer
+  }
+
 }

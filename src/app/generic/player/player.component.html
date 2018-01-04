@@ -1,5 +1,6 @@
 <div class="timeline-player-container">
-  <div class="action">
+
+  <div class="vbutton action">
     <i class="material-icons">skip_previous</i>
     <p>Previous Event</p>
   </div>
@@ -10,13 +11,13 @@
       <i *ngIf="isPlaying" class="material-icons">pause</i>
     </div>
     <div class="speed">
-      <i class="material-icons">fast_rewind</i>
-      <span>x{{ speed }}</span>
-      <i class="material-icons">fast_forward</i>
+      <i (click)="decreaseSpeed()" class="material-icons action">fast_rewind</i>
+      <span class="multiplier">x{{ speed }}</span>
+      <i (click)="increaseSpeed()" class="material-icons action">fast_forward</i>
     </div>
   </div>
 
-  <div class="action">
+  <div class="vbutton action">
     <i class="material-icons">skip_next</i>
     <p>Next Event</p>
   </div>

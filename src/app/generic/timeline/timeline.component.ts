@@ -72,12 +72,11 @@ export class TimelineComponent implements OnInit, OnChanges {
     this.buildTimeline();
 
     this.invalidateDisplayList();
-
-    // this.startPlayer(-3); // Test
   }
 
 
   ngOnChanges(changes: SimpleChanges): void {
+    /*
     if (this.timeline) {
       this.invalidateDisplayList();
     }
@@ -86,10 +85,8 @@ export class TimelineComponent implements OnInit, OnChanges {
       console.log('Data Source was changed');
       // TODO: force rebuild timeline
     }
+    */
   }
-
-
-
 
   /*
   * Public methods
@@ -205,15 +202,18 @@ export class TimelineComponent implements OnInit, OnChanges {
   * */
   highlightPoint(index: number) {
     this.data.events.forEach((item: TimelineEventVM, i: number) => item.selected = i === index);
+
     this.invalidateDisplayList();
+
+    // UnSelect prev
     if (index > 0) {
-      // Unselect prev
       this.select.emit(this.data.events[index - 1]);
     }
+    // Select current item
     if (index < this.data.events.length) {
-      // Select current item
       this.select.emit(this.data.events[index]);
     }
+    // TODO: indicate and animate active point
   }
 
   private handleClick(item: TimelineEventVM) {
@@ -239,9 +239,7 @@ export class TimelineComponent implements OnInit, OnChanges {
 
 
   private clearSelection() {
-    this.data.events.forEach((d) => {
-      d.selected = false;
-    });
+    this.data.events.forEach((d) => d.selected = false);
     this.invalidateDisplayList();
   }
 
