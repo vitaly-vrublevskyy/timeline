@@ -19,16 +19,21 @@ export class PlayerComponent implements OnInit, OnDestroy {
   * Change player cursor
   * */
   @Output()
-  changeCursor: EventEmitter<number> = new EventEmitter<number>();
+  change: EventEmitter<number> = new EventEmitter<number>();
 
   isPlaying: boolean;
+
+  /*
+  * Current playback needle index
+  * */
+  private needleIndex = -1; // Getter
 
   /**
    * Current speed index
    * */
-  speedIndex: number;
-
   private speedMultipliersList: number[] = [-3, -2.5, -2, -1.5, 1, 1.5, 2, 2.5, 3];
+
+  private speedIndex: number = 4;
 
   get speed(): number {
     return this.speedMultipliersList[this.speedIndex];
@@ -42,7 +47,6 @@ export class PlayerComponent implements OnInit, OnDestroy {
   constructor() { }
 
   ngOnInit() {
-    this.speedIndex = 4;
   }
 
   ngOnDestroy() {
@@ -50,14 +54,16 @@ export class PlayerComponent implements OnInit, OnDestroy {
     this.playbackSubscription.unsubscribe();
   }
 
+  /*
+  * Event Handlers
+  * */
   togglePlay() {
     this.isPlaying = !this.isPlaying;
+
     if (this.isPlaying) {
       this.startPlayer();
-    } else {
-      if (this.playbackSubscription) {
-        this.playbackSubscription.unsubscribe();
-      }
+    } else if (this.playbackSubscription) {
+      this.playbackSubscription.unsubscribe();
     }
   }
 
@@ -73,21 +79,54 @@ export class PlayerComponent implements OnInit, OnDestroy {
     const times: number = this.events.length + 1;
     this.playbackSubscription = TimerObservable.create(0, period)
       .take(times)
-      .subscribe(index => this.changeCursor.emit(index));
+      .subscribe(index => this.handlePlayback(index, times));
   }
 
+  /*
+  * Needle Position
+  * */
+  goToPrevious() {
+    if (this.needleIndex > 0) {
+      this.change.emit(--this.needleIndex);
+    }
+  }
+
+  goToNext() {
+    if (this.needleIndex < this.events.length - 1) {
+      this.change.emit(++this.needleIndex);
+    }
+  }
+
+  /*
+  * Speed
+  * */
   increaseSpeed(): void {
-    if (this.speedIndex < this.events.length) {
-      this.speedIndex ++;
+    if (this.speedIndex < this.speedMultipliersList.length) {
+      this.speedIndex++;
     }
     // TODO: invalidate current timer
   }
 
   decreaseSpeed(): void {
     if (this.speedIndex > 0) {
-      this.speedIndex --;
+      this.speedIndex--;
     }
     // TODO: invalidate current timer
+  }
+
+
+  /*
+  * Playback
+  * */
+  private handlePlayback(index: number, times: number) {
+    const isLastPoint: boolean = index === times - 1;
+    if (isLastPoint) {
+      this.isPlaying = false;
+      this.needleIndex = -1;
+    } else {
+      this.needleIndex = index;
+    }
+    this.change.emit(index);
   }
 
 }

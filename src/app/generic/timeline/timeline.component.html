@@ -2,7 +2,7 @@
   <!--TODO: SPAN <text x="20" y="15" fill="#83A2BE" font-size="11" font-family="Arial">TIMELINE</text>-->
   <app-player
     [events]="data.events"
-    (changeCursor)="highlightPoint($event)">
+    (change)="highlightPoint($event)">
   </app-player>
 
   <div class="d3-timeline" style="flex: 1" #container>

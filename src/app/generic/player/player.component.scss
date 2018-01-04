@@ -21,9 +21,17 @@ $border: rgb(217, 227, 239);
     align-items: center;
     justify-content: center;
     .material-icons {
-      @include animate-hover();
       font-size: 40px;
       user-select: none;
+    }
+    &:not(.disabled) > .material-icons {
+      @include animate-hover();
+    }
+    &.disabled {
+      cursor: default;
+      .material-icons {
+        opacity: .5;
+      }
     }
 
     &.play {
