@@ -3,8 +3,14 @@
   <div class="control-bar">
     <i (click)="onCreateEvent()" class="material-icons" title="Add Random Event">add_circle_outline</i>
     <strong>Add</strong> rand events
-    <i (click)="onRemoveEvent()" class="material-icons" title="Remove couple of events">remove_circle_outline</i>
-    <strong>Remove</strong> couple existing events
+    <i (click)="onRemoveOddEvent()" class="material-icons" title="Remove couple of events">remove_circle_outline</i>
+    <strong>Remove</strong> odd events
+
+    <i (click)="onSelectEvenEvent()" class="material-icons">select_all</i>
+    <strong>Select</strong> even events
+
+    <i (click)="onUnSelectEvenEvent()" class="material-icons">tab_unselected</i>
+    <strong>Unselect</strong> even events
   </div>
 
   <!-- Logger -->

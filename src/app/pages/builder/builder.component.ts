@@ -43,7 +43,7 @@ export class BuilderComponent implements OnInit {
   }
 
   /*
-  * Builder Event handlers
+  * Builder Event handlers (Util methods only for the demo achieved goals)
   * */
   onCreateEvent() {
     const items = [
@@ -60,9 +60,28 @@ export class BuilderComponent implements OnInit {
     this.timeline.addEvents(items);
   }
 
-  onRemoveEvent() {
-    const ids: number[] = this.timelineData.events.map(item => item.id);
+  onRemoveOddEvent() {
+    const ids: number[] = this.timelineData.events
+      .map(item => item.id)
+      .filter((item, index: number) => index % 2 === 0);
+
     this.timeline.removeEvents(ids);
+  }
+
+  onSelectEvenEvent() {
+    const ids: number[] = this.timelineData.events
+      .map(item => item.id)
+      .filter((item, index: number) => index % 2 === 1);
+
+    this.timeline.selectEvent(ids);
+  }
+
+  onUnSelectEvenEvent() {
+    const ids: number[] = this.timelineData.events
+      .map(item => item.id)
+      .filter((item, index: number) => index % 2 === 1);
+
+    this.timeline.unselectEvent(ids);
   }
 
   /*

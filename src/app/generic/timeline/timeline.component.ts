@@ -17,7 +17,11 @@ export class TimelineComponent implements OnInit, OnChanges {
   /**
    * Inputs
    * */
+
+  /* Whole Items */
   @Input() public data: TimelineDataVM;
+
+  // TODO: collection of grouped items by some range
 
   @Input() private selection: TimelineEventVM[];
 
@@ -108,8 +112,25 @@ export class TimelineComponent implements OnInit, OnChanges {
     // TODO: Calculate (and change if required) best scale for given events on timeline
   }
 
-  selectEvent(item: TimelineEventVM) {
-    // TODO:
+  selectEvent(ids: number[]) {
+    ids.forEach(id => {
+      const event: TimelineEventVM = _.find(this.data.events, {id: id});
+      if (event) {
+        event.selected = true;
+      }
+    });
+
+    this.invalidateDisplayList();
+  }
+
+  unselectEvent(ids: number[]) {
+    ids.forEach(id => {
+      const event: TimelineEventVM = _.find(this.data.events, {id: id});
+      if (event) {
+        event.selected = false;
+      }
+    });
+    this.invalidateDisplayList();
   }
 
 
