@@ -71,6 +71,9 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
   constructor() {
   }
 
+  /*
+  * Ng Hooks
+  * */
   ngOnInit() {
     this.buildTimeline();
 
@@ -84,6 +87,11 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
     if (this.timeline) {
       this.invalidateDisplayList();
     }
+
+    if (changes['data'] && changes['data'].currentValue &&  !changes['data'].isFirstChange()) {
+      console.log('Data Source was changed');
+      // TODO: force rebuild timeline
+    }
   }
 
   ngOnDestroy() {
@@ -92,33 +100,26 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
   }
 
 
-  private invalidateDisplayList() {
-    const points = this.data.events;
-
-    this.circles = this.dataGroup.selectAll('circle')
-      .data(points, (d) => d.id);
-
-    this.circles.enter()
-      .append('circle')
-      .attr('cy', (d) => 46)
-      .attr('r', 5)
-      .attr('fill', d => d.color)
-      .on('click', (item: TimelineEventVM) => this.handleClick(item))
-      .on('mouseover', (item: TimelineEventVM) => this.handleMouseOver(item))
-      .on('mouseout', (item: TimelineEventVM) => this.handleMouseOut(item))
-      .merge(this.circles)
-      .style('fill', d => {
-        if (d.selected || d.hovered) {
-          return d.hovered ? 'gray' : d.color;
-        }
-        return '#ffffff';
-      })
-      .attr('cx', (d: TimelineEventVM) => {
-        const scalex = this.zoomTransform ? this.zoomTransform.k : 1;
-        return scalex * this.xScale(d.dateTime);
-      });
-    this.circles.exit().remove();
+  /*
+  * Public methods
+  * */
+  addEvents(items: TimelineEventVM[]) {
+    this.data.events = this.data.events.concat(items);
+    this.invalidateDisplayList();
+    // TODO: Calculate (and change if required) best scale for given events on timeline
   }
+
+  removeEvents(ids: number[]) {
+    this.data.events = this.data.events.filter(item => !ids.includes(item.id));
+    this.invalidateDisplayList();
+    // TODO: Calculate (and change if required) best scale for given events on timeline
+  }
+
+  selectEvent(item: TimelineEventVM) {
+    // TODO:
+  }
+
+
 
   private buildTimeline() {
     const element = this.chartContainer.nativeElement;
@@ -174,6 +175,39 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
       .attr('class', 'datagroup');
   }
 
+  private invalidateDisplayList() {
+    const points = this.data.events;
+
+    this.circles = this.dataGroup.selectAll('circle')
+      .data(points, (d) => d.id);
+
+    const radius = 5;
+
+    this.circles.enter()
+      .append('circle')
+      .attr('cy', (d) => 46)
+      .attr('r', radius)
+      .attr('fill', d => d.color)
+      .on('click', (item: TimelineEventVM) => this.handleClick(item))
+      .on('mouseover', (item: TimelineEventVM) => this.handleMouseOver(item))
+      .on('mouseout', (item: TimelineEventVM) => this.handleMouseOut(item))
+      .merge(this.circles)
+      .style('fill', d => {
+        if (d.selected || d.hovered) {
+          return d.hovered ? 'lightgrey' : d.color; // TODO: Change color of hovered event to 10% lighter
+        }
+        return '#ffffff';
+      })
+      .attr('cx', (d: TimelineEventVM) => {
+        const scalex = this.zoomTransform ? this.zoomTransform.k : 1;
+        return scalex * this.xScale(d.dateTime);
+      })
+      .transition()
+      .duration(300)
+      .attr('r', (d) => d.hovered ? radius + 5 : radius);
+    this.circles.exit().remove();
+  }
+
 
   /*
   * Event Handlers
@@ -189,12 +223,14 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
     item.hovered = true;
     this.hoverIn.emit(item);
     this.invalidateDisplayList();
+    // TODO: show tooltip
   }
 
   private handleMouseOut(item: TimelineEventVM) {
     item.hovered = false;
     this.hoverOut.emit(item);
     this.invalidateDisplayList();
+    // TODO: hide tooltip
   }
 
   /**

@@ -1,18 +1,26 @@
 <div class="view-container">
+  <!--Control Bars-->
+  <div class="control-bar">
+    <i (click)="onCreateEvent()" class="material-icons" title="Add Random Event">add_circle_outline</i>
+    <strong>Add</strong> rand events
+    <i (click)="onRemoveEvent()" class="material-icons" title="Remove couple of events">remove_circle_outline</i>
+    <strong>Remove</strong> couple existing events
+  </div>
+
   <!-- Logger -->
   <div [class.opened]="showLogs" class="logger">
     <div (click)="showLogs = !showLogs" class="trigger" title="Logger Info">
       <img  class="icon" src="/assets/drag-vertical.svg"/>
     </div>
     <div #scrollContent class="scroll-content">
-      <p *ngFor="let item of logs"  class="output-event">{{ item }}</p>
+      <p *ngFor="let log of logs"  class="output-event">{{ log }}</p>
     </div>
   </div>
 
   <!-- Timeline Component -->
   <app-timeline
     [data]="timelineData"
-    (select)="onToggleSelect($event)"
+    (select)="onSelectEvent($event)"
     (hoverIn)="onHoverInEvent($event)"
     (hoverOut)="onHoverOutEvent($event)"
     class="timeline">
