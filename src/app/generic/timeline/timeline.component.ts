@@ -4,6 +4,7 @@ import {
 } from '@angular/core';
 import { TimelineEventVM, TimelineDataVM } from '../../model/view-models';
 import * as d3 from 'd3';
+import * as _ from 'lodash';
 
 
 @Component({
@@ -92,7 +93,11 @@ export class TimelineComponent implements OnInit, OnChanges {
   * Public methods
   * */
   addEvents(items: TimelineEventVM[]) {
-    this.data.events = this.data.events.concat(items);
+    this.data.events = _.chain(this.data.events)
+      .concat(items)
+      .orderBy('dateTime')
+      .value();
+
     this.invalidateDisplayList();
     // TODO: Calculate (and change if required) best scale for given events on timeline
   }
