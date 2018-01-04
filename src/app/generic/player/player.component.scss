@@ -1,0 +1,57 @@
+@import "../../../mixin";
+$border: rgb(217, 227, 239);
+
+.timeline-player-container {
+  display: flex;
+  min-width: 175px;
+  min-height: 85px;
+  font-family: Arial;
+  color: #83A2BE;
+  border: 1px solid $border;
+
+  .action {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    .material-icons {
+      @include animate-hover();
+      font-size: 40px;
+      user-select: none;
+    }
+
+    &.play {
+      flex: 1;
+    }
+
+    > p {
+      margin: 0;
+      word-wrap: normal;
+      max-width: 40px;
+      text-align: center;
+      font-size: 12px;
+      padding: 0 10px;
+    }
+
+  }
+
+  .control-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    border-left: 1px solid $border;
+    border-right: 1px solid $border;
+    .speed {
+      min-width: 75px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 30px;
+      border-top: 1px solid $border;
+      .material-icons {
+        font-size: 16px;
+      }
+    }
+  }
+}

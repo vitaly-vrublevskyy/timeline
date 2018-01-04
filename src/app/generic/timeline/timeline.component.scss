@@ -1,5 +1,6 @@
+$border: #83A2BE;
+
 .d3-chart {
-  width: 100%;
   height: 120px;
   background: #fff;
 }
@@ -12,7 +13,7 @@ rect {
     fill: #E9F2FB;
   }
 
-  &.handle.handle{
+  &.handle.handle {
     width:1px;
     stroke:#5093E1;
     fill:#5093E1;
@@ -24,19 +25,19 @@ rect {
 
 
 circle{
-  stroke: #83A2BE;
+  stroke: $border;
   fill:#fff;
   cursor: pointer;
 }
 
 .axis-x line {
-  stroke: #83A2BE;
+  stroke: $border;
 }
 
 .axis-x path {
-  stroke: #83A2BE;
+  stroke: $border;
 }
 
 .axis-x text {
-  fill: #83A2BE;
+  fill: $border;
 }

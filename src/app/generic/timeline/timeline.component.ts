@@ -132,7 +132,7 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
 
     this.timeline = this.svg.append('g')
       .attr('class', 'timeline')
-      .attr('transform', `translate(${this.margin.left + 170}, ${this.margin.top + 30})`);
+      .attr('transform', `translate(${this.margin.left}, ${this.margin.top + 15})`);
 
     this.xScale = d3.scaleTime()
       .domain([this.data.timeConfig.start, this.data.timeConfig.end])
@@ -215,6 +215,7 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
 
   private handleClick(item: TimelineEventVM) {
     item.selected = !item.selected; // Toggle
+    item.hovered = false;
     this.select.emit(item);
     this.invalidateDisplayList();
   }

@@ -1,0 +1,40 @@
+$ease-out-duration:  400ms !default;
+$ease-out-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1) !default;
+
+@mixin animate-hover() {
+  transition: {
+    duration: $ease-out-duration;
+    timing-function: $ease-out-timing-function;
+    property: transform;
+  }
+  &:hover {
+    transform: scale(1.25)
+  }
+}
+
+
+@mixin animate-property($property) {
+  transition: {
+    duration: $ease-out-duration;
+    timing-function: $ease-out-timing-function;
+    property: $property;
+  }
+}
+
+// This mixin will ensure that lines that overflow the container will hide the overflow and
+// truncate neatly with an ellipsis.
+@mixin truncate-line() {
+  white-space: nowrap;
+  overflow-x: hidden;
+  text-overflow: ellipsis;
+}
+
+// This mixin normalizes default element styles, e.g. font weight for heading text.
+@mixin normalize-text() {
+  & > * {
+    margin: 0;
+    padding: 0;
+    font-weight: normal;
+    font-size: inherit;
+  }
+}

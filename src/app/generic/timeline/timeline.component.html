@@ -1,16 +1,8 @@
-<div class="d3-chart" #container>
-  <svg #svg>
-    <!-- TODO: separate component, Player -->
-    <g>
-      <text x="20" y="15" fill="#83A2BE" font-size="11" font-family="Arial">TIMELINE</text>
-      <line y1="30" x2="40" x1="40" y2="120" shape-rendering="crispEdges"
-            stroke-width="1" stroke="#D9E3EF"/>
-      <line y1="30" x2="130" x1="130" y2="120" shape-rendering="crispEdges"
-            stroke-width="1" stroke="#D9E3EF"/>
-      <line y1="30" x2="170" x1="170" y2="120" shape-rendering="crispEdges"
-            stroke-width="1" stroke="#D9E3EF"/>
-      <line y1="30" x1="0" x2="170" y2="30" shape-rendering="crispEdges"
-            stroke-width="1" stroke="#D9E3EF"/>
-    </g>
-  </svg>
+<div style="display: flex; align-items: center;">
+  <!--TODO: <text x="20" y="15" fill="#83A2BE" font-size="11" font-family="Arial">TIMELINE</text>-->
+  <app-player></app-player>
+  <div class="d3-chart" style="flex: 1" #container>
+    <svg #svg>
+    </svg>
+  </div>
 </div>
