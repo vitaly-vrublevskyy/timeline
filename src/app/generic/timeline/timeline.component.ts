@@ -4,8 +4,7 @@ import {
 } from '@angular/core';
 import { TimelineEventVM, TimelineDataVM } from '../../model/view-models';
 import * as d3 from 'd3';
-import { Subscription } from 'rxjs/Subscription';
-import { TimerObservable } from 'rxjs/observable/TimerObservable';
+
 
 @Component({
   selector: 'app-timeline',
@@ -13,7 +12,7 @@ import { TimerObservable } from 'rxjs/observable/TimerObservable';
   styleUrls: ['./timeline.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
+export class TimelineComponent implements OnInit, OnChanges {
   /**
    * Inputs
    * */
@@ -36,7 +35,7 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
   hoverOut: EventEmitter<TimelineEventVM> = new EventEmitter();
 
   /*
-  * Access to Template
+  * Access to View Template
   * */
   @ViewChild('container')
   private chartContainer: ElementRef;
@@ -62,11 +61,6 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
   private circles: any;
 
   private margin: any = {top: 0, bottom: 0, left: 0, right: 0};
-
-  /**
-   * Player related properties
-   * */
-  private playbackSubscription: Subscription;
 
   constructor() {
   }
@@ -94,10 +88,7 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
     }
   }
 
-  ngOnDestroy() {
-    // Unsubscribe timer
-    this.playbackSubscription.unsubscribe();
-  }
+
 
 
   /*
@@ -212,6 +203,18 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
   /*
   * Event Handlers
   * */
+  highlightPoint(index: number) {
+    this.data.events.forEach((item: TimelineEventVM, i: number) => item.selected = i === index);
+    this.invalidateDisplayList();
+    if (index > 0) {
+      // Unselect prev
+      this.select.emit(this.data.events[index - 1]);
+    }
+    if (index < this.data.events.length) {
+      // Select current item
+      this.select.emit(this.data.events[index]);
+    }
+  }
 
   private handleClick(item: TimelineEventVM) {
     item.selected = !item.selected; // Toggle
@@ -234,44 +237,6 @@ export class TimelineComponent implements OnInit, OnChanges, OnDestroy {
     // TODO: hide tooltip
   }
 
-  /**
-   1. x(3)
-   2. x(2.5)
-   3. x(2)
-   4. x(1.5)
-   5. x(1) - default
-   6. x(-1.5)
-   7. x(-2)
-   8. x(-2.5)
-   9. x(-3)
-   **/
-  private startPlayer(speed: number = 1) {
-    if (speed < 0) {
-      speed = Math.abs(1 / speed);
-    }
-    if (this.playbackSubscription) {
-      this.playbackSubscription.unsubscribe();
-    }
-    const period = 1000 / speed;
-    const times: number = this.data.events.length + 1;
-    this.playbackSubscription = TimerObservable.create(0, period)
-      .take(times)
-      .subscribe(index => this.highlightPoint(index));
-  }
-
-
-  private highlightPoint(index: number) {
-    this.data.events.forEach((item: TimelineEventVM, i: number) => item.selected = i === index);
-    this.invalidateDisplayList();
-    if (index > 0) {
-      // Unselect prev
-      this.select.emit(this.data.events[index - 1]);
-    }
-    if (index < this.data.events.length) {
-      // Select current item
-      this.select.emit(this.data.events[index]);
-    }
-  }
 
   private clearSelection() {
     this.data.events.forEach((d) => {

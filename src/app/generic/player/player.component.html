@@ -6,8 +6,8 @@
 
   <div class="control-group">
     <div (click)="togglePlay()" class="play action">
-      <i *ngIf="!playing" class="material-icons">play_arrow</i>
-      <i *ngIf="playing" class="material-icons">pause</i>
+      <i *ngIf="!isPlaying" class="material-icons">play_arrow</i>
+      <i *ngIf="isPlaying" class="material-icons">pause</i>
     </div>
     <div class="speed">
       <i class="material-icons">fast_rewind</i>

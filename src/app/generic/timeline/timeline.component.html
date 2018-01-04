@@ -1,6 +1,10 @@
 <div style="display: flex; align-items: center;">
-  <!--TODO: <text x="20" y="15" fill="#83A2BE" font-size="11" font-family="Arial">TIMELINE</text>-->
-  <app-player></app-player>
+  <!--TODO: SPAN <text x="20" y="15" fill="#83A2BE" font-size="11" font-family="Arial">TIMELINE</text>-->
+  <app-player
+    [events]="data.events"
+    (changeCursor)="highlightPoint($event)">
+  </app-player>
+
   <div class="d3-chart" style="flex: 1" #container>
     <svg #svg>
     </svg>
