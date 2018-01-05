@@ -5,16 +5,20 @@ $border: #83A2BE;
   background: #fff;
 }
 
-rect {
-
+.brush > rect {
   &.selection{
     fill: #E9F2FB;
   }
 
-  &.handle.handle {
+  &.handle {
     stroke:#5093E1;
     fill:#5093E1;
   }
+}
+
+.needle {
+  stroke:#5093E1;
+  fill:#5093E1;
 }
 
 .tooltip {

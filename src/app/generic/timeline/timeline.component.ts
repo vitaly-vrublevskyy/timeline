@@ -1,8 +1,5 @@
-import {
-  Component, ElementRef, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, ViewChild,
-  ViewEncapsulation
-} from '@angular/core';
-import { TimelineDataVM, TimelineEventVM } from '../../model/view-models';
+import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
+import {TimelineDataVM, TimelineEventVM} from '../../model/view-models';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
 import * as Color from 'color';
@@ -61,6 +58,7 @@ export class TimelineComponent implements OnInit {
   private zoomTransform: any;
   private circles: any;
   private tooltip: any;
+  private needle: any;
 
   private margin: any = {top: 0, bottom: 0, left: 0, right: 0};
 
@@ -152,7 +150,22 @@ export class TimelineComponent implements OnInit {
 
     this.timeline = this.svg.append('g')
       .attr('class', 'timeline')
-      .attr('transform', `translate(${this.margin.left}, ${this.margin.top + 30})`);
+      .attr('transform', `translate(${this.margin.left}, ${this.margin.top + 30})`)
+      .on('mouseover', () => this.needle.style('display', null))
+      .on('mouseout', () => this.needle.style('display', 'none'))
+      .on('mousemove', () => {
+        const relativeX = d3.mouse(this.timeline.node())[0];
+        this.needle.attr('transform', `translate(${relativeX}, 0)`);
+      });
+
+    // Pointer
+    this.needle = this.timeline
+      .append('rect')
+      .attr('width', 1)
+      .attr('height', this.height - 30)
+      .attr('fill', 'blue')
+      .attr('class', 'needle')
+      .attr('transform', `translate(0, 0)`);
 
     this.recalculateScaleX();
 
@@ -171,6 +184,7 @@ export class TimelineComponent implements OnInit {
           return;
         }
         const selection = d3.brushSelection(d3.select('.brush').node());
+        // TODO: detect start and and date
 
         this.zoomTransform = d3.event.transform;
 
