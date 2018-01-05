@@ -14,8 +14,8 @@ export interface TimelineEventVM {
   id: number;
   name: string;
   dateTime: Date;
-  color: string | number; // #Hex
-  // Internal properties
+  color: string; // #Hex
+  // Internal properties binded in timeline
   selected?: boolean; // Indicate selected event (Click / Unclick )
-  hovered?: boolean; // TODO:
+  hovered?: boolean;
 }

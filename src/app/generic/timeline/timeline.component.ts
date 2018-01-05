@@ -5,6 +5,7 @@ import {
 import { TimelineDataVM, TimelineEventVM } from '../../model/view-models';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
+import * as Color from 'color';
 
 
 @Component({
@@ -153,53 +154,9 @@ export class TimelineComponent implements OnInit {
       .attr('class', 'timeline')
       .attr('transform', `translate(${this.margin.left}, ${this.margin.top + 30})`);
 
-    this.xScale = d3.scaleTime()
-      .domain([this.data.timeConfig.start, this.data.timeConfig.end])
-      .range([0, this.width]);
-    this.xAxis = d3.axisBottom(this.xScale);
-    this.xAxisGroup = this.timeline.append('g')
-      .attr('class', 'axis axis-x')
-      .attr('transform', `translate(0,  46)`)
-      .call(this.xAxis);
+    this.recalculateScaleX();
 
-    this.brushGroup = this.timeline.append('g')
-      .attr('class', 'brush')
-      .attr('transform', `translate(0, 0)`);
-    this.brush = d3.brushX()
-      .handleSize(1.5)
-      .extent([[0, 0], [this.width, this.height - 30]])
-      .filter(() => {
-        // Brush only without [Ctlr]
-        return !d3.event.ctrlKey;
-      })
-      .on('end', () => {
-        if (!d3.event.sourceEvent) {
-          return;
-        }// Only transition after input.
-        if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') {
-          return;
-        }// ignore brush-by-zoom
-        if (!d3.event.selection) {
-          // TODO: send notification
-          // this.clearSelection();
-          return;
-        }// Ignore empty selections.
-
-        const rescaledX = this.zoomTransform ?
-          this.zoomTransform.rescaleX(this.xScale)
-          : this.xScale;
-
-        const selectionDateRange = d3.event.selection.map(rescaledX.invert),
-          // rounded
-          d1 = selectionDateRange.map(d3.timeDay.round);
-
-        this.updateBrushSelection(selectionDateRange);
-
-        this.lastSelection = selectionDateRange;
-        d3.select('.brush').transition().call(d3.event.target.move, d3.event.selection);
-      });
-
-    this.brushGroup.call(this.brush);
+    this.buildBrush();
 
     this.zoom = d3.zoom()
       .filter(() => {
@@ -251,6 +208,59 @@ export class TimelineComponent implements OnInit {
       .attr('class', 'datagroup');
   }
 
+  private buildBrush() {
+    this.brushGroup = this.timeline.append('g')
+      .attr('class', 'brush')
+      .attr('transform', `translate(0, 0)`);
+    this.brush = d3.brushX()
+      .handleSize(1.5)
+      .extent([[0, 0], [this.width, this.height - 30]])
+      .filter(() => {
+        // Brush only without [Ctlr]
+        return !d3.event.ctrlKey;
+      })
+      .on('end', () => {
+        if (!d3.event.sourceEvent) {
+          return;
+        }// Only transition after input.
+        if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'zoom') {
+          return;
+        }// ignore brush-by-zoom
+        if (!d3.event.selection) {
+          // TODO: send notification
+          // this.clearSelection();
+          return;
+        }// Ignore empty selections.
+
+        const rescaledX = this.zoomTransform ?
+          this.zoomTransform.rescaleX(this.xScale)
+          : this.xScale;
+
+        const selectionDateRange = d3.event.selection.map(rescaledX.invert),
+          // rounded
+          d1 = selectionDateRange.map(d3.timeDay.round);
+
+        this.updateBrushSelection(selectionDateRange);
+
+        this.lastSelection = selectionDateRange;
+        d3.select('.brush').transition().call(d3.event.target.move, d3.event.selection);
+      });
+
+    this.brushGroup.call(this.brush);
+  }
+
+  private recalculateScaleX() {
+    this.xScale = d3.scaleTime()
+      .domain([this.data.timeConfig.start, this.data.timeConfig.end])
+      .range([0, this.width]);
+
+    this.xAxis = d3.axisBottom(this.xScale);
+    this.xAxisGroup = this.timeline.append('g')
+      .attr('class', 'axis axis-x')
+      .attr('transform', `translate(0,  46)`)
+      .call(this.xAxis);
+  }
+
   private invalidateDisplayList() {
     const points = this.data.events;
 
@@ -268,8 +278,7 @@ export class TimelineComponent implements OnInit {
       .on('mouseover', (item: TimelineEventVM) => this.handleMouseOver(item))
       .on('mouseout', (item: TimelineEventVM) => this.handleMouseOut(item))
       .merge(this.circles)
-      .style('fill', d => d.selected ? d.color : '#ffffff')
-      .style('opacity', (d) => d.hovered ? .9 : 1)
+      .style('fill', (d: TimelineEventVM) => this.getBackgroundColorForEvent(d))
       .attr('cx', (d: TimelineEventVM) => {
         const scalex = this.zoomTransform ? this.zoomTransform.k : 1;
         return scalex * this.xScale(d.dateTime);
@@ -279,6 +288,19 @@ export class TimelineComponent implements OnInit {
       .attr('r', (d) => d.hovered ? radius + 5 : radius);
 
     this.circles.exit().remove();
+  }
+
+
+  private getBackgroundColorForEvent(item: TimelineEventVM): string {
+    let hexColor = '#ffffff';
+    if (item.selected || item.hovered) {
+      hexColor = item.color;
+      if (item.hovered) {
+        // Change color of hovered event to 10% lighter
+        hexColor = Color(item.color).lighten(0.1).hex();
+      }
+    }
+    return hexColor;
   }
 
   private handleClick(item: TimelineEventVM) {
