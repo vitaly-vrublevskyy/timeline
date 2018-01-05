@@ -1,9 +1,13 @@
-import {Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
-import {TimelineDataVM, TimelineEventVM} from '../../model/view-models';
+import {
+  Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild,
+  ViewEncapsulation
+} from '@angular/core';
+import { TimelineDataVM, TimelineEventVM } from '../../model/view-models';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
 import * as Color from 'color';
 
+const format = d3.timeFormat('%d %b %Y %H:%M:%S');
 
 @Component({
   selector: 'app-timeline',
@@ -15,22 +19,22 @@ export class TimelineComponent implements OnInit {
   /**
    * Inputs
    * */
-  @Input() public data: TimelineDataVM; /* Whole Items */
+  @Input() public data: TimelineDataVM;
+  /* Whole Items */
 
   // TODO: collection of grouped items by some range
   /**
    * Outputs
    * */
+    // FIXME: Refactor to list of ids
   @Output()
-  select: EventEmitter<TimelineEventVM> = new EventEmitter(); /* Notify about Click / Unclick */
-  @Input() private selection: TimelineEventVM[];
-
+  select: EventEmitter<TimelineEventVM> = new EventEmitter();
   @Output()
   hoverIn: EventEmitter<TimelineEventVM> = new EventEmitter();
-
   @Output()
   hoverOut: EventEmitter<TimelineEventVM> = new EventEmitter();
-
+  /* Notify about Click / Unclick  multiple events ids*/
+  @Input() private selection: TimelineEventVM[];
   /*
   * Access to View Template
   * */
@@ -61,6 +65,7 @@ export class TimelineComponent implements OnInit {
   private needle: any;
 
   private margin: any = {top: 0, bottom: 0, left: 0, right: 0};
+  private brushHandleLabels: any;
 
   constructor() {
   }
@@ -116,8 +121,8 @@ export class TimelineComponent implements OnInit {
   }
 
   /**
-  * Event Handlers
-  * */
+   * Event Handlers
+   * */
 
   /* HighlightPoint active | selected event  */
   highlightPoint(index: number) {
@@ -138,8 +143,8 @@ export class TimelineComponent implements OnInit {
   }
 
   /**
-  * Private Methods
-  * */
+   * Private Methods
+   * */
 
   private buildTimeline() {
     const element = this.chartContainer.nativeElement;
@@ -158,12 +163,20 @@ export class TimelineComponent implements OnInit {
     this.timeline = this.svg.append('g')
       .attr('class', 'timeline')
       .attr('transform', `translate(${this.margin.left}, ${this.margin.top + 30})`)
-      .on('mouseover', () => this.needle.style('display', null))
-      .on('mouseout', () => this.needle.style('display', 'none'))
+      // .on('mouseover', () => this.needle.style('display', null))
+      .on('mouseout', () => this.hideNeedle())
       .on('mousemove', () => {
-        const relativeX = d3.mouse(this.timeline.node())[0];
+        const needleX = d3.mouse(this.timeline.node())[0];
+        const selection = d3.brushSelection(d3.select('.brush').node());
+        const [start, end] = selection || [0, 0];
+        const needleIsOverBrush = start < needleX && needleX < end;
         // FIXME: indicate if hovered event (circle) as well
-        this.needle.attr('transform', `translate(${relativeX}, 0)`);
+
+        d3.selectAll('.needle-text')
+          .text(format(this.rescaledX().invert(needleX)))
+        this.needle
+          .style('display', needleIsOverBrush ? 'none' : 'initial')
+          .attr('transform', `translate(${needleX}, 0)`);
       });
 
     this.drawNeedle();
@@ -178,15 +191,29 @@ export class TimelineComponent implements OnInit {
       .attr('class', 'datagroup');
   }
 
+  private hideNeedle() {
+    this.needle.style('display', 'none');
+  }
+
   /* Draw cursor pointer */
   private drawNeedle() {
-    this.needle = this.timeline
+    this.needle = this.timeline.append('g')
+      .attr('class', 'needle');
+
+    this.needle
+      .append('text')
+      .attr('class', 'needle-text')
+      .attr('y', -1)
+      .attr('x', 5)
+      .text('');
+
+    this.needle
       .append('rect')
-      .attr('width', 1)
-      .attr('height', this.height - 30)
+      .attr('width', 0.5)
+      .attr('height', this.height)
       .attr('fill', 'blue')
-      .attr('class', 'needle')
-      .attr('transform', `translate(0, 0)`);
+      .attr('class', 'needle-rect')
+      .attr('transform', `translate(0, -30)`);
   }
 
   private handleTimelineZoom() {
@@ -195,10 +222,11 @@ export class TimelineComponent implements OnInit {
         // Zoom only with [Ctlr]
         return d3.event.ctrlKey;
       })
-      .scaleExtent([1, 5])
+      .scaleExtent([0.1, 100])
       // .on('zoom', null)
       // .translateExtent([[-100, 0], [this.width + 90, 0]])
       .on('zoom', () => {
+        this.hideNeedle();
         if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') {
           return;
         }
@@ -245,6 +273,26 @@ export class TimelineComponent implements OnInit {
         // Brush only without [Ctlr]
         return !d3.event.ctrlKey;
       })
+      .on('brush', () => {
+        if (!d3.event.selection) {
+          this.brushHandleLabels.attr('display', 'none');
+        } else {
+          this.hideNeedle();
+          this.brushHandleLabels.attr('display', null)
+            .attr('transform', (d, i) => {
+              return `translate(${d3.event.selection[i]},0)`;
+            })
+            .attr('x', ({type}) => {
+              return type === 'w' ? -90 : 5;
+            })
+            .text(({type}) => {
+              const index = type === 'w' ? 0 : 1;
+              return format(this.rescaledX().invert(d3.event.selection[index]));
+            });
+
+          // this.brushGroup.selectAll('.handle--custom')
+        }
+      })
       .on('end', () => {
         if (!d3.event.sourceEvent) {
           return;
@@ -254,13 +302,12 @@ export class TimelineComponent implements OnInit {
         }// ignore brush-by-zoom
         if (!d3.event.selection) {
           // TODO: send notification
-          // this.clearSelection();
+          this.brushHandleLabels.attr('display', 'none');
+          this.clearSelection();
           return;
         }// Ignore empty selections.
 
-        const rescaledX = this.zoomTransform ?
-          this.zoomTransform.rescaleX(this.xScale)
-          : this.xScale;
+        const rescaledX = this.rescaledX();
 
         const selectionDateRange = d3.event.selection.map(rescaledX.invert),
           // rounded
@@ -272,7 +319,22 @@ export class TimelineComponent implements OnInit {
         d3.select('.brush').transition().call(d3.event.target.move, d3.event.selection);
       });
 
+    this.brushHandleLabels = this.brushGroup.selectAll('.handle--custom')
+      .data([{type: 'w'}, {type: 'e'}])
+      .enter().append('text')
+      .attr('class', 'handle--custom')
+      .attr('y', '10')
+      .text('')
+
+    // .attr('text', (d, i) => `${d} - ${i}`);
+
     this.brushGroup.call(this.brush);
+  }
+
+  private rescaledX() {
+    return this.zoomTransform ?
+      this.zoomTransform.rescaleX(this.xScale)
+      : this.xScale;
   }
 
   private culateScaleX() {

@@ -21,19 +21,32 @@ $blue: #83A2BE;
 }
 
 .brush > rect {
-  &.selection{
+  &.selection {
     fill: #E9F2FB;
   }
 
   &.handle {
-    stroke:#5093E1;
-    fill:#5093E1;
+    //stroke: #5093E1;
+    fill: #5093E1;
   }
+}
+.handle--custom{
+  fill:$blue;
+  font-size: 9px;
+  font-family: sans-serif;
 }
 
 .needle {
-  stroke:#5093E1;
-  fill:#5093E1;
+  >.needle-text{
+    font: 10px sans-serif;
+    fill:#aa55aa;
+  }
+
+  >.needle-rect {
+
+    stroke: #aa55aa;
+    fill: #aa55aa;
+  }
 }
 
 .tooltip {
@@ -64,10 +77,9 @@ $blue: #83A2BE;
   }
 }
 
-
-circle{
+circle {
   stroke: $blue;
-  fill:#fff;
+  fill: #fff;
   cursor: pointer;
 }
 
