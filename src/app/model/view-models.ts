@@ -12,6 +12,7 @@ export interface TimeConfigVM {
 
 export interface TimelineEventVM {
   id: number;
+  name: string;
   dateTime: Date;
   color: string | number; // #Hex
   // Internal properties

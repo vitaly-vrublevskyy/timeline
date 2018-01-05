@@ -20,15 +20,29 @@ rect {
 .tooltip {
   position: absolute;
   text-align: center;
-  width: 70px;
-  height: 28px;
-  padding: 2px;
+  min-width: 70px;
+  max-width: 120px;
+  min-height: 14px;
+  padding: 4px 7px;
   font: 12px sans-serif;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.9);
   border: 0px;
-  border-radius: 8px;
+  border-radius: 5px;
   pointer-events: none;
   color: white;
+  &:after {
+    content: "";
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    -webkit-transform: rotate(45deg);
+    transform: rotate(45deg);
+    position: absolute;
+    left: calc(45%);
+    bottom: -5px;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: -1;
+  }
 }
 
 

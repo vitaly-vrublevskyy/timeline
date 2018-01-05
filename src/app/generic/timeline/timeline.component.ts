@@ -13,27 +13,26 @@ import * as _ from 'lodash';
   styleUrls: ['./timeline.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class TimelineComponent implements OnInit, OnChanges {
+export class TimelineComponent implements OnInit {
   /**
    * Inputs
    * */
-
-  /* Whole Items */
-  @Input() public data: TimelineDataVM;
+  @Input() public data: TimelineDataVM; /* Whole Items */
 
   // TODO: collection of grouped items by some range
-  /* Notify about Click / Unclick */
-  @Output()
-  select: EventEmitter<TimelineEventVM> = new EventEmitter();
-
   /**
    * Outputs
    * */
   @Output()
+  select: EventEmitter<TimelineEventVM> = new EventEmitter(); /* Notify about Click / Unclick */
+  @Input() private selection: TimelineEventVM[];
+
+  @Output()
   hoverIn: EventEmitter<TimelineEventVM> = new EventEmitter();
+
   @Output()
   hoverOut: EventEmitter<TimelineEventVM> = new EventEmitter();
-  @Input() private selection: TimelineEventVM[];
+
   /*
   * Access to View Template
   * */
@@ -42,6 +41,7 @@ export class TimelineComponent implements OnInit, OnChanges {
 
   @ViewChild('svg')
   private svgElement: ElementRef;
+
   /*
   * D3 related properties
   * */
@@ -76,19 +76,6 @@ export class TimelineComponent implements OnInit, OnChanges {
   }
 
 
-  ngOnChanges(changes: SimpleChanges): void {
-    /*
-    if (this.timeline) {
-      this.invalidateDisplayList();
-    }
-
-    if (changes['data'] && changes['data'].currentValue &&  !changes['data'].isFirstChange()) {
-      console.log('Data Source was changed');
-      // TODO: force rebuild timeline
-    }
-    */
-  }
-
   /*
   * Public methods
   * */
@@ -108,8 +95,8 @@ export class TimelineComponent implements OnInit, OnChanges {
     // TODO: Calculate (and change if required) best scale for given events on timeline
   }
 
-  selectEvent(ids: number[]) {
-    ids.forEach(id => {
+  selectEvent(eventIds: number[]) {
+    eventIds.forEach(id => {
       const event: TimelineEventVM = _.find(this.data.events, {id: id});
       if (event) {
         event.selected = true;
@@ -119,8 +106,8 @@ export class TimelineComponent implements OnInit, OnChanges {
     this.invalidateDisplayList();
   }
 
-  unselectEvent(ids: number[]) {
-    ids.forEach(id => {
+  unselectEvent(eventIds: number[]) {
+    eventIds.forEach(id => {
       const event: TimelineEventVM = _.find(this.data.events, {id: id});
       if (event) {
         event.selected = false;
@@ -180,7 +167,7 @@ export class TimelineComponent implements OnInit, OnChanges {
       .attr('transform', `translate(0, 0)`);
     this.brush = d3.brushX()
       .handleSize(1.5)
-      .extent([[0, 0], [this.width, this.height-30]])
+      .extent([[0, 0], [this.width, this.height - 30]])
       .filter(() => {
         // Brush only without [Ctlr]
         return !d3.event.ctrlKey;
@@ -193,6 +180,7 @@ export class TimelineComponent implements OnInit, OnChanges {
           return;
         }// ignore brush-by-zoom
         if (!d3.event.selection) {
+          // TODO: send notification
           // this.clearSelection();
           return;
         }// Ignore empty selections.
@@ -280,12 +268,8 @@ export class TimelineComponent implements OnInit, OnChanges {
       .on('mouseover', (item: TimelineEventVM) => this.handleMouseOver(item))
       .on('mouseout', (item: TimelineEventVM) => this.handleMouseOut(item))
       .merge(this.circles)
-      .style('fill', d => {
-        if (d.selected || d.hovered) {
-          return d.hovered ? 'lightgrey' : d.color; // TODO: Change color of hovered event to 10% lighter
-        }
-        return '#ffffff';
-      })
+      .style('fill', d => d.selected ? d.color : '#ffffff')
+      .style('opacity', (d) => d.hovered ? .9 : 1)
       .attr('cx', (d: TimelineEventVM) => {
         const scalex = this.zoomTransform ? this.zoomTransform.k : 1;
         return scalex * this.xScale(d.dateTime);
@@ -293,6 +277,7 @@ export class TimelineComponent implements OnInit, OnChanges {
       .transition()
       .duration(300)
       .attr('r', (d) => d.hovered ? radius + 5 : radius);
+
     this.circles.exit().remove();
   }
 
@@ -307,31 +292,37 @@ export class TimelineComponent implements OnInit, OnChanges {
     item.hovered = true;
     this.hoverIn.emit(item);
     this.invalidateDisplayList();
+    this.showTooltip(item);
+  }
 
-    // show tooltip
+  private showTooltip(item: TimelineEventVM) {
     this.tooltip
       .transition()
       .duration(200)
       .style('opacity', .9);
 
-    const options = {hour: 'numeric', minute: 'numeric', second: 'numeric'};
+    this.tooltip.html(item.name);
+    const tooltipBounds: any = this.tooltip.node().getBoundingClientRect();
+    const margin = 30;
     this.tooltip
-      .html(`${item.dateTime.toLocaleTimeString('en-US', options)}<br/>ID:${item.id}`)
-      .style('left', (d3.event.pageX) + 'px')
-      .style('top', (d3.event.pageY - 55) + 'px');
+      .style('left', (d3.event.pageX - tooltipBounds.width / 2) + 'px')
+      .style('top', (d3.event.pageY - tooltipBounds.height - margin) + 'px');
   }
 
   private handleMouseOut(item: TimelineEventVM) {
     item.hovered = false;
     this.hoverOut.emit(item);
     this.invalidateDisplayList();
-    // hide tooltip
+    this.hideTooltip();
+  }
+
+
+  private hideTooltip() {
     this.tooltip
       .transition()
       .duration(500)
       .style('opacity', 0);
   }
-
 
   private clearSelection() {
     this.data.events.forEach((d) => d.selected = false);
@@ -341,9 +332,13 @@ export class TimelineComponent implements OnInit, OnChanges {
   private updateBrushSelection(dateRange: Date[]) {
     const [start, end] = dateRange.map(a => a.getTime());
 
-    this.data.events.forEach((d) => {
-      d.selected = start <= d.dateTime.getTime()
-        && d.dateTime.getTime() <= end;
+    // Select items in range
+    this.data.events.forEach((item: TimelineEventVM) => {
+      const isSelected: boolean = (item.dateTime.getTime() >= start && item.dateTime.getTime() <= end);
+      if (item.selected !== isSelected) {
+        item.selected = isSelected;
+        this.select.emit(item);
+      }
     });
 
     this.invalidateDisplayList();

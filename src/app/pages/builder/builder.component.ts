@@ -49,10 +49,12 @@ export class BuilderComponent implements OnInit {
     const items = [
       {
         id: _.uniqueId(),
+        name: 'Dynamically added first event',
         color: 'red',
         dateTime: new Date('2016-06-05T00:00:00.000Z')
       }, {
         id: _.uniqueId(),
+        name: 'Dynamically second event',
         color: 'red',
         dateTime: new Date('2016-06-06T00:00:00.000Z')
       }

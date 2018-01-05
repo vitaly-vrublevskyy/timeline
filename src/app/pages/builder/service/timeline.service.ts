@@ -15,44 +15,52 @@ export class TimelineService {
     },
     events: [
       {
-        dateTime: new Date('2016-06-01T00:00:00.000Z'),
         id: _.uniqueId(),
+        name: 'Lorem ipsum dolor sit amet',
+        dateTime: new Date('2016-06-01T00:00:00.000Z'),
         color: '#5093E1'
       },
       {
-        dateTime: new Date('2016-06-02T00:00:00.000Z'),
         id: _.uniqueId(),
+        name: 'Consectetur adipiscing elit',
+        dateTime: new Date('2016-06-02T00:00:00.000Z'),
         color: '#5093E1'
       },
       // Three dots in one day
       {
+        id: _.uniqueId(),
+        name: 'In suscipit nisi eu maximus rutrum',
         dateTime: new Date('2016-06-03T01:00:00.000Z'),
-        id: _.uniqueId(),
         color: '#98B877'
       },
       {
+        id: _.uniqueId(),
+        name: 'Sem tortor tempus purus',
         dateTime: new Date('2016-06-03T02:00:00.000Z'),
-        id: _.uniqueId(),
         color: '#5093E1'
       },
       {
+        id: _.uniqueId(),
+        name: 'Pellentesque dolor libero',
         dateTime: new Date('2016-06-03T03:00:00.000Z'),
-        id: _.uniqueId(),
         color: '#98B877'
       },
       {
-        dateTime: new Date('2016-06-10T00:00:00.000Z'),
         id: _.uniqueId(),
+        name: 'Nullam consectetur massa eget dolor vestibulum',
+        dateTime: new Date('2016-06-10T00:00:00.000Z'),
         color: '#5093E1'
       },
       {
-        dateTime: new Date('2016-06-25T00:00:00.000Z'),
         id: _.uniqueId(),
+        name: 'Mauris augue magna',
+        dateTime: new Date('2016-06-25T00:00:00.000Z'),
         color: '#98B877'
       },
       {
-        dateTime: new Date('2016-08-02T00:00:00.000Z'),
         id: _.uniqueId(),
+        name: 'Nullam commodo malesuada neque',
+        dateTime: new Date('2016-08-02T00:00:00.000Z'),
         color: '#5093E1'
       }
     ]
