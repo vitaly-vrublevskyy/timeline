@@ -76,7 +76,7 @@ export class TimelineComponent implements OnInit {
 
 
   /*
-  * Public methods
+  * Public interface methods
   * */
   addEvents(items: TimelineEventVM[]) {
     this.data.events = _.chain(this.data.events)
@@ -115,9 +115,11 @@ export class TimelineComponent implements OnInit {
     this.invalidateDisplayList();
   }
 
-  /*
+  /**
   * Event Handlers
   * */
+
+  /* HighlightPoint active | selected event  */
   highlightPoint(index: number) {
     this.data.events.forEach((item: TimelineEventVM, i: number) => item.selected = i === index);
 
@@ -132,7 +134,12 @@ export class TimelineComponent implements OnInit {
       this.select.emit(this.data.events[index]);
     }
     // TODO: indicate and animate active point
+    // TODO: move needle to that point
   }
+
+  /**
+  * Private Methods
+  * */
 
   private buildTimeline() {
     const element = this.chartContainer.nativeElement;
@@ -155,10 +162,24 @@ export class TimelineComponent implements OnInit {
       .on('mouseout', () => this.needle.style('display', 'none'))
       .on('mousemove', () => {
         const relativeX = d3.mouse(this.timeline.node())[0];
+        // FIXME: indicate if hovered event (circle) as well
         this.needle.attr('transform', `translate(${relativeX}, 0)`);
       });
 
-    // Pointer
+    this.drawNeedle();
+
+    this.culateScaleX();
+
+    this.buildBrush();
+
+    this.handleTimelineZoom();
+
+    this.dataGroup = this.timeline.append('g')
+      .attr('class', 'datagroup');
+  }
+
+  /* Draw cursor pointer */
+  private drawNeedle() {
     this.needle = this.timeline
       .append('rect')
       .attr('width', 1)
@@ -166,11 +187,9 @@ export class TimelineComponent implements OnInit {
       .attr('fill', 'blue')
       .attr('class', 'needle')
       .attr('transform', `translate(0, 0)`);
+  }
 
-    this.recalculateScaleX();
-
-    this.buildBrush();
-
+  private handleTimelineZoom() {
     this.zoom = d3.zoom()
       .filter(() => {
         // Zoom only with [Ctlr]
@@ -184,7 +203,6 @@ export class TimelineComponent implements OnInit {
           return;
         }
         const selection = d3.brushSelection(d3.select('.brush').node());
-        // TODO: detect start and and date
 
         this.zoomTransform = d3.event.transform;
 
@@ -213,19 +231,13 @@ export class TimelineComponent implements OnInit {
       });
 
     this.svg.call(this.zoom);
-
-
-    this.brushGroup.call(this.brush);
-
-
-    this.dataGroup = this.timeline.append('g')
-      .attr('class', 'datagroup');
   }
 
   private buildBrush() {
     this.brushGroup = this.timeline.append('g')
       .attr('class', 'brush')
       .attr('transform', `translate(0, 0)`);
+
     this.brush = d3.brushX()
       .handleSize(1.5)
       .extent([[0, 0], [this.width, this.height - 30]])
@@ -263,7 +275,7 @@ export class TimelineComponent implements OnInit {
     this.brushGroup.call(this.brush);
   }
 
-  private recalculateScaleX() {
+  private culateScaleX() {
     this.xScale = d3.scaleTime()
       .domain([this.data.timeConfig.start, this.data.timeConfig.end])
       .range([0, this.width]);
