@@ -243,7 +243,6 @@ export class TimelineComponent implements OnInit {
         this.xAxisGroup
           .call(this.xAxis.scale(d3.event.transform.rescaleX(this.xScale)));
 
-        // this.xScale = rescaled;
 
         if (selection) {
 
@@ -252,8 +251,6 @@ export class TimelineComponent implements OnInit {
             this.lastSelection.map(rescaled));
         }
 
-
-        // this.brushGroup.call(this.brush.move, null);
         this.invalidateDisplayList();
 
       });
