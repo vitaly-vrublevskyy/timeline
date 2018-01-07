@@ -5,17 +5,28 @@ export interface TimelineDataVM {
 }
 
 export interface TimeConfigVM {
-  id: number;
+  id: string;
   start: Date;
   end: Date;
 }
 
 export interface TimelineEventVM {
-  id: number;
+  id: string;
   name: string;
   dateTime: Date;
   color: string; // #Hex
   // Internal properties binded in timeline
   selected?: boolean; // Indicate selected event (Click / Unclick )
   hovered?: boolean;
+}
+
+export interface TimelineEventGroup {
+  id: string;
+  name: string;
+  dateTime: Date;
+  color: string; // #Hex
+  // Internal properties binded in timeline
+  selected?: boolean; // Indicate selected event (Click / Unclick )
+  hovered?: boolean;
+  groupedEvents: TimelineEventVM[];
 }

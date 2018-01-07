@@ -29,6 +29,9 @@ $blue: #83A2BE;
     //stroke: #5093E1;
     fill: #5093E1;
   }
+  &.overlay {
+    cursor: none;
+  }
 }
 .handle--custom{
   fill:$blue;
@@ -56,7 +59,7 @@ $blue: #83A2BE;
   max-width: 120px;
   min-height: 14px;
   padding: 4px 7px;
-  font: 12px sans-serif;
+  font: 9px sans-serif;
   background: rgba(0, 0, 0, 0.9);
   border: 0px;
   border-radius: 5px;
@@ -80,7 +83,7 @@ $blue: #83A2BE;
 circle {
   stroke: $blue;
   fill: #fff;
-  cursor: pointer;
+  //cursor: pointer;
 }
 
 .axis-x line {

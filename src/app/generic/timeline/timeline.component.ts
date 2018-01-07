@@ -2,7 +2,7 @@ import {
   Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild,
   ViewEncapsulation
 } from '@angular/core';
-import { TimelineDataVM, TimelineEventVM } from '../../model/view-models';
+import { TimelineDataVM, TimelineEventGroup, TimelineEventVM } from '../../model/view-models';
 import * as d3 from 'd3';
 import * as _ from 'lodash';
 import * as Color from 'color';
@@ -63,6 +63,14 @@ export class TimelineComponent implements OnInit {
   private circles: any;
   private tooltip: any;
   private needle: any;
+  //
+  // * 1 Event - 5 pixels
+  // * 2-5 Events - 10 pixels
+  // * 5-10 Events - 15 pixels
+  // * 10+ Event - 20 pixels
+  private radiusScale = d3.scaleThreshold()
+    .domain([2, 6, 11])
+    .range([5, 10, 15, 20]);
 
   private margin: any = {top: 0, bottom: 0, left: 0, right: 0};
   private brushHandleLabels: any;
@@ -163,7 +171,7 @@ export class TimelineComponent implements OnInit {
     this.timeline = this.svg.append('g')
       .attr('class', 'timeline')
       .attr('transform', `translate(${this.margin.left}, ${this.margin.top + 30})`)
-      // .on('mouseover', () => this.needle.style('display', null))
+      .on('mouseover', () => this.needle.style('display', null))
       .on('mouseout', () => this.hideNeedle())
       .on('mousemove', () => {
         const needleX = d3.mouse(this.timeline.node())[0];
@@ -173,8 +181,9 @@ export class TimelineComponent implements OnInit {
         // FIXME: indicate if hovered event (circle) as well
 
         d3.selectAll('.needle-text')
-          .text(format(this.rescaledX().invert(needleX)))
+          .text(format(this.rescaledX().invert(needleX)));
         this.needle
+          .style('cursor', 'none')
           .style('display', needleIsOverBrush ? 'none' : 'initial')
           .attr('transform', `translate(${needleX}, 0)`);
       });
@@ -246,7 +255,6 @@ export class TimelineComponent implements OnInit {
 
         if (selection) {
 
-          console.log(selection, this.lastSelection.map(rescaled));
           d3.select('.brush').call(this.brush.move,
             this.lastSelection.map(rescaled));
         }
@@ -321,7 +329,7 @@ export class TimelineComponent implements OnInit {
       .enter().append('text')
       .attr('class', 'handle--custom')
       .attr('y', '10')
-      .text('')
+      .text('');
 
     // .attr('text', (d, i) => `${d} - ${i}`);
 
@@ -347,36 +355,51 @@ export class TimelineComponent implements OnInit {
   }
 
   private invalidateDisplayList() {
-    const points = this.data.events;
+    const points = this.unionFindAlg(this.data.events);
+    const circles = this.dataGroup.selectAll('g.circleGroup')
+      .data(points, (d) => (d.id + d.hovered + d.selected)); // unique hash to trigger redraw
 
-    this.circles = this.dataGroup.selectAll('circle')
-      .data(points, (d) => d.id);
+    const circleGroupEnter = circles.enter().append('g')
+      .attr('class', 'circleGroup')
+      .on('click', (item: TimelineEventGroup) => this.handleClick(item))
+      .on('mouseover', (item: TimelineEventGroup) => this.handleMouseOver(item))
+      .on('mouseout', (item: TimelineEventGroup) => this.handleMouseOut(item));
 
-    const radius = 5;
+    circleGroupEnter
+      .append('rect')
+      .attr('class', 'hover-target')
+      .attr('height', 90);
 
-    this.circles.enter()
+    circleGroupEnter
       .append('circle')
-      .attr('cy', (d) => 46)
-      .attr('r', radius)
-      .attr('fill', d => d.color)
-      .on('click', (item: TimelineEventVM) => this.handleClick(item))
-      .on('mouseover', (item: TimelineEventVM) => this.handleMouseOver(item))
-      .on('mouseout', (item: TimelineEventVM) => this.handleMouseOut(item))
-      .merge(this.circles)
-      .style('fill', (d: TimelineEventVM) => this.getBackgroundColorForEvent(d))
-      .attr('cx', (d: TimelineEventVM) => {
-        const scalex = this.zoomTransform ? this.zoomTransform.k : 1;
-        return scalex * this.xScale(d.dateTime);
-      })
-      .transition()
-      .duration(300)
-      .attr('r', (d) => d.hovered ? radius + 5 : radius);
+      .attr('cy', 46);
 
-    this.circles.exit().remove();
+    const circleGroupMerge = circleGroupEnter.merge(circles)
+      .attr('transform', (d: TimelineEventVM) => {
+        const scalex = this.zoomTransform ? this.zoomTransform.k : 1;
+        return 'translate(' + scalex * this.xScale(d.dateTime) + ',' + 0 + ')';
+      });
+
+    circleGroupMerge.selectAll('rect')
+      .attr('width', (d: TimelineEventGroup) => {
+        return 2 * (this.radiusScale(d.groupedEvents.length) + (d.hovered ? 5 : 0));
+      })
+      .attr('x', (d: TimelineEventGroup) => {
+        return -(this.radiusScale(d.groupedEvents.length) + (d.hovered ? 1 : 0));
+      })
+      .style('cursor', 'none')
+      .style('opacity', 0);
+
+    circleGroupMerge.selectAll('circle')
+      .attr('r', (d: TimelineEventGroup) => {
+        return this.radiusScale(d.groupedEvents.length) + (d.hovered ? 1 : 0);
+      })
+      .style('fill', (d: TimelineEventGroup) => this.getBackgroundColorForEvent(d));
+
+    circles.exit().remove();
   }
 
-
-  private getBackgroundColorForEvent(item: TimelineEventVM): string {
+  private getBackgroundColorForEvent(item: TimelineEventGroup): string {
     let hexColor = '#ffffff';
     if (item.selected || item.hovered) {
       hexColor = item.color;
@@ -388,21 +411,31 @@ export class TimelineComponent implements OnInit {
     return hexColor;
   }
 
-  private handleClick(item: TimelineEventVM) {
-    item.selected = !item.selected; // Toggle
-    item.hovered = false;
-    this.select.emit(item);
+  private handleClick(group: TimelineEventGroup) {
+    group.groupedEvents.forEach((e) => {
+      e.selected = !group.selected;
+      e.hovered = false;
+    });
+
+    // TODO
+    // item.hovered = false;
+    // this.select.emit(item);
+
     this.invalidateDisplayList();
   }
 
-  private handleMouseOver(item: TimelineEventVM) {
-    item.hovered = true;
-    this.hoverIn.emit(item);
+  private handleMouseOver(group: TimelineEventGroup) {
+    group.groupedEvents.forEach((e) => {
+      e.hovered = true;
+    });
+
+    // TODO
+    // this.hoverIn.emit(group.groupedEvents);
     this.invalidateDisplayList();
-    this.showTooltip(item);
+    this.showTooltip(group);
   }
 
-  private showTooltip(item: TimelineEventVM) {
+  private showTooltip(item: TimelineEventGroup) {
     this.tooltip
       .transition()
       .duration(200)
@@ -416,9 +449,13 @@ export class TimelineComponent implements OnInit {
       .style('top', (d3.event.pageY - tooltipBounds.height - margin) + 'px');
   }
 
-  private handleMouseOut(item: TimelineEventVM) {
-    item.hovered = false;
-    this.hoverOut.emit(item);
+  private handleMouseOut(group: TimelineEventGroup) {
+    group.groupedEvents.forEach((e) => {
+      e.hovered = false;
+    });
+
+    // TODO
+    // this.hoverOut.emit(group.groupedEvents);
     this.invalidateDisplayList();
     this.hideTooltip();
   }
@@ -449,5 +486,41 @@ export class TimelineComponent implements OnInit {
     });
 
     this.invalidateDisplayList();
+  }
+
+  private unionFindAlg(events: TimelineEventVM[]): TimelineEventGroup[] {
+    const GROUPING_THRESHOLD = 20; // pixel, less than this goes to 1 group
+
+    // start by creating group for each event
+    const results = events.map((event) => {
+      const timelineEventGroup = <TimelineEventGroup>{...event, groupedEvents: [event]};
+      return timelineEventGroup;
+    });
+
+// TODO check with empty/ 1 element data
+    for (let i = 1; i < results.length; i++) {
+      const pivotGroup = results[i - 1];
+      const currentGroup = results[i];
+      const pivotGroupX = this.rescaledX()(pivotGroup.dateTime);
+      const currentGroupX = this.rescaledX()(currentGroup.dateTime);
+
+      if (currentGroupX - pivotGroupX < GROUPING_THRESHOLD) {
+        // merge 2 groups
+        pivotGroup.groupedEvents = pivotGroup.groupedEvents.concat(currentGroup.groupedEvents);
+        // remove current group from result
+        results.splice(i, 1);
+        // repeat with same prevGroup
+        i--;
+      }
+    }
+
+    results.forEach((group) => {
+      group.id = group.groupedEvents.reduce((accumulator, {id}) => (accumulator + id), '');
+      group.name = group.groupedEvents.reduce((accumulator, {name}) => (accumulator + name + '<br>'), '');
+      group.selected = group.groupedEvents.reduce((accumulator, {selected}) => (accumulator && selected), true);
+      group.hovered = group.groupedEvents.reduce((accumulator, {hovered}) => (accumulator && hovered), true);
+    });
+
+    return results;
   }
 }
