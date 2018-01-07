@@ -40,9 +40,9 @@ export class TimelineComponent implements OnInit {
   @Output()
   select: EventEmitter<TimelineEventVM> = new EventEmitter();
   @Output()
-  hoverIn: EventEmitter<TimelineEventVM> = new EventEmitter();
+  hoverIn: EventEmitter<string[]> = new EventEmitter();
   @Output()
-  hoverOut: EventEmitter<TimelineEventVM> = new EventEmitter();
+  hoverOut: EventEmitter<string[]> = new EventEmitter();
   /**
    *  Current time Scale Level in seconds.
    *  According to requirements: default scale of 10 seconds
@@ -212,7 +212,7 @@ export class TimelineComponent implements OnInit {
 
     this.timeline = this.svg.append('g')
       .attr('class', 'timeline')
-      .attr('transform', `translate(${this.margin.left}, ${this.margin.top + 30})`)
+      .attr('transform', `translate(${this.margin.left}, ${this.margin.top + 15})`)
       .on('mouseover', () => this.needle.style('display', null))
       .on('mouseout', () => this.hideNeedle())
       .on('mousemove', () => {
@@ -264,7 +264,7 @@ export class TimelineComponent implements OnInit {
       .attr('height', this.height)
       .attr('fill', 'blue')
       .attr('class', 'needle-rect')
-      .attr('transform', `translate(0, -30)`);
+      .attr('transform', `translate(0, -15)`);
   }
 
   private handleTimelineZoom() {
@@ -427,7 +427,7 @@ export class TimelineComponent implements OnInit {
 
     circleGroupMerge.selectAll('circle')
       .attr('r', (d: TimelineEventGroup) => {
-        return this.radiusScale(d.groupedEvents.length) + (d.hovered ? 1 : 0);
+        return this.radiusScale(d.groupedEvents.length) + (d.hovered ? 5 : 0);
       })
       .style('fill', (d: TimelineEventGroup) => this.getBackgroundColorForEvent(d));
 
@@ -453,6 +453,8 @@ export class TimelineComponent implements OnInit {
     });
 
     // TODO
+
+    group.groupedEvents.forEach(item => this.select.emit(item));
     // item.hovered = false;
     // this.select.emit(item);
 
@@ -464,10 +466,11 @@ export class TimelineComponent implements OnInit {
       e.hovered = true;
     });
 
-    // TODO
-    // this.hoverIn.emit(group.groupedEvents);
     this.invalidateDisplayList();
     this.showTooltip(group);
+
+    const ids: string[] = group.groupedEvents.map(item => item.id);
+    this.hoverIn.emit(ids);
   }
 
   private showTooltip(item: TimelineEventGroup) {
@@ -489,10 +492,11 @@ export class TimelineComponent implements OnInit {
       e.hovered = false;
     });
 
-    // TODO
-    // this.hoverOut.emit(group.groupedEvents);
     this.invalidateDisplayList();
     this.hideTooltip();
+
+    const ids: string[] = group.groupedEvents.map(item => item.id);
+    this.hoverOut.emit(ids);
   }
 
 

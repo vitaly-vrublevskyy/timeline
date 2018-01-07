@@ -89,12 +89,12 @@ export class BuilderComponent implements OnInit {
     this.logInfo(`${state} Event: ${item.id}`);
   }
 
-  onHoverInEvent(item: TimelineEventVM) {
-    this.logInfo(`Hover In: ${item.id}`);
+  onHoverInEvent(ids: string[]) {
+    this.logInfo(`Hover In: ${ids.join(', ')}`);
   }
 
-  onHoverOutEvent(item: TimelineEventVM) {
-    this.logInfo(`Hover Out: ${item.id}`);
+  onHoverOutEvent(ids: string[]) {
+    this.logInfo(`Hover Out: ${ids.join(', ')}`);
   }
 
   private logInfo(message: string) {

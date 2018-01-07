@@ -50,13 +50,13 @@ $blue: #83A2BE;
 .needle {
   >.needle-text{
     font: 10px sans-serif;
-    fill:#aa55aa;
+    fill: $blue;
   }
 
   >.needle-rect {
 
-    stroke: #aa55aa;
-    fill: #aa55aa;
+    stroke: $blue;
+    fill: $blue;
   }
 }
 
