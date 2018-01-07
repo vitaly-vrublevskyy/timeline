@@ -33,7 +33,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
    * */
   private speedMultipliersList: number[] = [-3, -2.5, -2, -1.5, 1, 1.5, 2, 2.5, 3];
 
-  private speedIndex: number = 4;
+  private speedIndex = 4;
 
   get speed(): number {
     return this.speedMultipliersList[this.speedIndex];

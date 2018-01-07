@@ -13,13 +13,8 @@ import 'rxjs/add/operator/first';
 import 'rxjs/add/operator/reduce';
 import 'rxjs/add/operator/delay';
 import 'rxjs/add/operator/take';
-
-// Observable operators
 import 'rxjs/add/observable/concat';
 import 'rxjs/add/observable/forkJoin';
 import 'rxjs/add/observable/throw';
 import 'rxjs/add/observable/of';
 import 'rxjs/add/observable/fromEvent';
-
-//Lodash
-import * as _ from 'lodash';

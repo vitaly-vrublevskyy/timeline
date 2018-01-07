@@ -1,9 +1,9 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BuilderComponent } from './builder.component';
-import {BuilderRoutingModule} from './builder-routing.module';
-import {GenericModule} from "../../generic/generic.module";
-import {TimelineService} from "./service/timeline.service";
+import { BuilderRoutingModule } from './builder-routing.module';
+import { GenericModule } from '../../generic/generic.module';
+import { TimelineService } from './service/timeline.service';
 
 @NgModule({
   imports: [
@@ -14,4 +14,5 @@ import {TimelineService} from "./service/timeline.service";
   declarations: [BuilderComponent],
   providers: [TimelineService]
 })
-export class BuilderModule { }
+export class BuilderModule {
+}

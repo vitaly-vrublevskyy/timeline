@@ -1,8 +1,8 @@
-import {Component, ElementRef, OnInit, ViewChild, ViewEncapsulation} from "@angular/core";
-import {TimelineService} from "./service/timeline.service";
-import {TimelineEventVM, TimelineDataVM} from "../../model/view-models";
+import { Component, ElementRef, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
+import { TimelineService } from './service/timeline.service';
+import { TimelineDataVM, TimelineEventVM } from '../../model/view-models';
 import * as _ from 'lodash';
-import {TimelineComponent} from "../../generic/timeline/timeline.component";
+import { TimelineComponent } from '../../generic/timeline/timeline.component';
 
 @Component({
   selector: 'app-builder',
@@ -14,24 +14,19 @@ import {TimelineComponent} from "../../generic/timeline/timeline.component";
 export class BuilderComponent implements OnInit {
 
   /**
-  * Data Source for timeline control
-  * */
+   * Data Source for timeline control
+   * */
   timelineData: TimelineDataVM;
-
-  /*
-  * Timeline component reference
-  * */
-  @ViewChild(TimelineComponent) private timeline: TimelineComponent;
-
   /**
    * Logger Info
    */
   showLogs: boolean;
-
   logs: string[] = [];
-
+  /*
+  * Timeline component reference
+  * */
+  @ViewChild(TimelineComponent) private timeline: TimelineComponent;
   @ViewChild('scrollContent') private scrollContainer: ElementRef;
-
 
 
   constructor(private service: TimelineService) {
@@ -63,7 +58,7 @@ export class BuilderComponent implements OnInit {
   }
 
   onRemoveOddEvent() {
-    const ids: number[] = this.timelineData.events
+    const ids: string[] = this.timelineData.events
       .map(item => item.id)
       .filter((item, index: number) => index % 2 === 0);
 
@@ -71,7 +66,7 @@ export class BuilderComponent implements OnInit {
   }
 
   onSelectEvenEvent() {
-    const ids: number[] = this.timelineData.events
+    const ids: string[] = this.timelineData.events
       .map(item => item.id)
       .filter((item, index: number) => index % 2 === 1);
 
@@ -79,7 +74,7 @@ export class BuilderComponent implements OnInit {
   }
 
   onUnSelectEvenEvent() {
-    const ids: number[] = this.timelineData.events
+    const ids: string[] = this.timelineData.events
       .map(item => item.id)
       .filter((item, index: number) => index % 2 === 1);
 

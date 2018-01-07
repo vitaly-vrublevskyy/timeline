@@ -101,13 +101,13 @@ export class TimelineComponent implements OnInit {
     // TODO: Calculate (and change if required) best scale for given events on timeline
   }
 
-  removeEvents(ids: number[]) {
+  removeEvents(ids: string[]) {
     this.data.events = this.data.events.filter(item => !ids.includes(item.id));
     this.invalidateDisplayList();
     // TODO: Calculate (and change if required) best scale for given events on timeline
   }
 
-  selectEvent(eventIds: number[]) {
+  selectEvent(eventIds: string[]) {
     eventIds.forEach(id => {
       const event: TimelineEventVM = _.find(this.data.events, {id: id});
       if (event) {
@@ -118,7 +118,7 @@ export class TimelineComponent implements OnInit {
     this.invalidateDisplayList();
   }
 
-  unselectEvent(eventIds: number[]) {
+  unselectEvent(eventIds: string[]) {
     eventIds.forEach(id => {
       const event: TimelineEventVM = _.find(this.data.events, {id: id});
       if (event) {
@@ -294,8 +294,6 @@ export class TimelineComponent implements OnInit {
               const index = type === 'w' ? 0 : 1;
               return format(this.rescaledX().invert(d3.event.selection[index]));
             });
-
-          // this.brushGroup.selectAll('.handle--custom')
         }
       })
       .on('end', () => {
@@ -314,9 +312,9 @@ export class TimelineComponent implements OnInit {
 
         const rescaledX = this.rescaledX();
 
-        const selectionDateRange = d3.event.selection.map(rescaledX.invert),
-          // rounded
-          d1 = selectionDateRange.map(d3.timeDay.round);
+        const selectionDateRange = d3.event.selection.map(rescaledX.invert);
+        // rounded
+        // selectionDateRange = selectionDateRange.map(d3.timeDay.round);
 
         this.updateBrushSelection(selectionDateRange);
 
@@ -330,8 +328,6 @@ export class TimelineComponent implements OnInit {
       .attr('class', 'handle--custom')
       .attr('y', '10')
       .text('');
-
-    // .attr('text', (d, i) => `${d} - ${i}`);
 
     this.brushGroup.call(this.brush);
   }
