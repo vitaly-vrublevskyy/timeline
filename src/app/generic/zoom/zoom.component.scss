@@ -1,0 +1,47 @@
+@import "../../../mixin";
+
+$border: rgb(217, 227, 239);
+
+.zoom-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: #83A2BE;
+  border: 1px solid $border;
+  padding: 5px 0;
+
+  .v-scroll-bar {
+    min-height: 40px;
+    height: 40px;
+    width: 0px;
+    border: 1px solid $border;
+    position: relative;
+    div.debug-info {
+      display: none;
+      position: absolute;
+      top: 15px;
+      left: -14px;
+      font-size: 8px;
+      right: -23px;
+      p {
+        @include truncate-line();
+        width: 100%;
+        margin: 0;
+      }
+    }
+  }
+
+  .action {
+    &.material-icons {
+      font-size: 20px;
+      user-select: none;
+      opacity: .5;
+      &:not(.disabled) {
+        opacity: 1;
+        cursor: pointer;
+        @include animate-hover();
+      }
+    }
+
+  }
+}

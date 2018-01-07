@@ -1,11 +1,21 @@
+<div class="zoom-level-debug-info">
+  <i class="material-icons">zoom_in</i>
+  Time Scale Level: {{ zoomLevel }} s.
+</div>
+
 <div class="timeline-component">
   <app-player
     [events]="data.events"
     (change)="highlightPoint($event)">
   </app-player>
 
-  <div class="d3-timeline" style="flex: 1" #container>
+  <div class="d3-timeline" #container>
     <svg #svg>
     </svg>
   </div>
+
+  <app-zoom
+    [(zoom)]="zoomLevel"
+    (zoomChange)="onZoomChanged($event)"
+    class="zoom"></app-zoom>
 </div>

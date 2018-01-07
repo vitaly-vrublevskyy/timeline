@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TimelineComponent } from './timeline/timeline.component';
 import { PlayerComponent } from './player/player.component';
+import { ZoomComponent } from './zoom/zoom.component';
 
 @NgModule({
   imports: [
@@ -9,7 +10,8 @@ import { PlayerComponent } from './player/player.component';
   ],
   declarations: [
     PlayerComponent,
-    TimelineComponent
+    TimelineComponent,
+    ZoomComponent
   ],
   exports: [
     TimelineComponent

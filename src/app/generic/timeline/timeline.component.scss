@@ -2,23 +2,31 @@ $blue: #83A2BE;
 
 .timeline-component {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   position: relative;
   &:before {
     content: 'TIMELINE';
     color: $blue;
     position: absolute;
-    top: 15px;
+    top: 0px;
     left: 20px;
     font-size: 11px;
     font-family: Arial;
   }
+
+  .d3-timeline {
+    flex: 1;
+    height: 120px;
+    background: #fff;
+  }
+
+  .zoom {
+    width: 30px;
+    max-width: 30px;
+  }
 }
 
-.d3-timeline {
-  height: 120px;
-  background: #fff;
-}
+
 
 .brush > rect {
   &.selection {
@@ -96,4 +104,14 @@ circle {
 
 .axis-x text {
   fill: $blue;
+}
+
+
+.zoom-level-debug-info {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 12px;
+  font-family: Arial;
+  color: #B5B5B5;
 }

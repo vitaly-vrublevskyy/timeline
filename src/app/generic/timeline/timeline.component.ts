@@ -9,6 +9,16 @@ import * as Color from 'color';
 
 const format = d3.timeFormat('%d %b %Y %H:%M:%S');
 
+const MIN_ZOOM = 0.1;
+
+const MAX_ZOOM = 1000;
+
+const MIN_ZOOM_LEVEL = 1;
+
+const MAX_ZOOM_LEVEL = 604800;
+
+const ZOOM_LEVELS = [1, 10, 15, 60, 300, 900, 1800, 3600, 14400, 43200, 86400, 604800];
+
 @Component({
   selector: 'app-timeline',
   templateUrl: './timeline.component.html',
@@ -33,17 +43,21 @@ export class TimelineComponent implements OnInit {
   hoverIn: EventEmitter<TimelineEventVM> = new EventEmitter();
   @Output()
   hoverOut: EventEmitter<TimelineEventVM> = new EventEmitter();
-  /* Notify about Click / Unclick  multiple events ids*/
-  @Input() private selection: TimelineEventVM[];
+  /**
+   *  Current time Scale Level in seconds.
+   *  According to requirements: default scale of 10 seconds
+   **/
+  zoomLevel: number;
+
   /*
   * Access to View Template
   * */
+  /* Notify about Click / Unclick  multiple events ids*/
+  @Input() private selection: TimelineEventVM[];
   @ViewChild('container')
   private chartContainer: ElementRef;
-
   @ViewChild('svg')
   private svgElement: ElementRef;
-
   /*
   * D3 related properties
   * */
@@ -62,15 +76,20 @@ export class TimelineComponent implements OnInit {
   private zoomTransform: any;
   private circles: any;
   private tooltip: any;
-  private needle: any;
   //
   // * 1 Event - 5 pixels
   // * 2-5 Events - 10 pixels
   // * 5-10 Events - 15 pixels
+  private needle: any;
   // * 10+ Event - 20 pixels
   private radiusScale = d3.scaleThreshold()
     .domain([2, 6, 11])
     .range([5, 10, 15, 20]);
+
+  private zoomConversionScale = d3.scaleLinear()
+    .domain([MIN_ZOOM, MAX_ZOOM])
+    .range(ZOOM_LEVELS);
+
 
   private margin: any = {top: 0, bottom: 0, left: 0, right: 0};
   private brushHandleLabels: any;
@@ -82,11 +101,15 @@ export class TimelineComponent implements OnInit {
   * Ng Hooks
   * */
   ngOnInit() {
+    this.zoomLevel = 10;
+
     this.buildTimeline();
 
     this.invalidateDisplayList();
-  }
 
+    // setTimeout(this.zoomProgramatic.bind(this), 3000, 0.1);
+    // setTimeout(this.zoomProgramatic.bind(this), 6000, 5);
+  }
 
   /*
   * Public interface methods
@@ -118,6 +141,10 @@ export class TimelineComponent implements OnInit {
     this.invalidateDisplayList();
   }
 
+  /**
+   * Event Handlers
+   * */
+
   unselectEvent(eventIds: string[]) {
     eventIds.forEach(id => {
       const event: TimelineEventVM = _.find(this.data.events, {id: id});
@@ -128,13 +155,9 @@ export class TimelineComponent implements OnInit {
     this.invalidateDisplayList();
   }
 
-  /**
-   * Event Handlers
-   * */
-
   /* HighlightPoint active | selected event  */
   highlightPoint(index: number) {
-    this.data.events.forEach((item: TimelineEventVM, i: number) => item.selected = i === index);
+    this.data.events.forEach((item: TimelineEventVM, i: number) => item.hovered = i === index);
 
     this.invalidateDisplayList();
 
@@ -148,6 +171,25 @@ export class TimelineComponent implements OnInit {
     }
     // TODO: indicate and animate active point
     // TODO: move needle to that point
+  }
+
+  onZoomChanged() {
+    console.log('Zoom Changes to', this.zoomLevel, 's.');
+    // FIXME:  Apply zoom in seconds
+    this.zoomProgramatic(this.zoomConversionScale(this.zoomLevel));
+  }
+
+  zoomProgramatic(k: number) {
+    // const {x, y} = this.zoomTransform || d3.zoomIdentity;
+    // const tt = d3.zoomTransform;
+    // let t = d3.zoomTransform(this.dataGroup.node());
+    // t.scale()
+    // reset this.svg.call(this.zoom.transform, d3.zoomIdentity);
+    // this.svg.transition().duration(750).call(this.zoom.transform, {k, x, y});
+    // this.svg.transition().duration(750).call(this.zoom.transform, t);
+
+    // this.zoom.scaleTo(this.svg, k);
+    this.svg.transition().duration(750).call(this.zoom.scaleTo, k);
   }
 
   /**
@@ -231,7 +273,7 @@ export class TimelineComponent implements OnInit {
         // Zoom only with [Ctlr]
         return d3.event.ctrlKey;
       })
-      .scaleExtent([0.1, 100])
+      .scaleExtent([MIN_ZOOM, MAX_ZOOM])
       // .on('zoom', null)
       // .translateExtent([[-100, 0], [this.width + 90, 0]])
       .on('zoom', () => {
@@ -243,18 +285,15 @@ export class TimelineComponent implements OnInit {
 
         this.zoomTransform = d3.event.transform;
 
-        const rescaled = this.zoomTransform.rescaleX(this.xScale);
-
+        const rescaled = this.rescaledX();
 
         this.dataGroup
           .attr('transform', `translate(${this.zoomTransform.x}, 0) scale(1,1)`);
 
         this.xAxisGroup
-          .call(this.xAxis.scale(d3.event.transform.rescaleX(this.xScale)));
-
+          .call(this.xAxis.scale(rescaled));
 
         if (selection) {
-
           d3.select('.brush').call(this.brush.move,
             this.lastSelection.map(rescaled));
         }
@@ -333,7 +372,7 @@ export class TimelineComponent implements OnInit {
   }
 
   private rescaledX() {
-    return this.zoomTransform ?
+    return (this.zoomTransform && this.zoomTransform.rescaleX) ?
       this.zoomTransform.rescaleX(this.xScale)
       : this.xScale;
   }
@@ -510,11 +549,15 @@ export class TimelineComponent implements OnInit {
       }
     }
 
+
+    // name merged with <br> to display in html tooltip
+    // if any hovered - group is hovered
+    // if all selected - group is selected
     results.forEach((group) => {
       group.id = group.groupedEvents.reduce((accumulator, {id}) => (accumulator + id), '');
       group.name = group.groupedEvents.reduce((accumulator, {name}) => (accumulator + name + '<br>'), '');
       group.selected = group.groupedEvents.reduce((accumulator, {selected}) => (accumulator && selected), true);
-      group.hovered = group.groupedEvents.reduce((accumulator, {hovered}) => (accumulator && hovered), true);
+      group.hovered = group.groupedEvents.reduce((accumulator, {hovered}) => (accumulator || hovered), false);
     });
 
     return results;
