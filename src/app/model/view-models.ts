@@ -20,8 +20,9 @@ export interface TimelineEventVM {
   hovered?: boolean;
 }
 
+// TODO: refactor to encapsulate all related logic, like: export class ... with constructor and invalidate() methods
 export interface TimelineEventGroup {
-  id: string;
+  id: string; // TODO: refactor ids: string[] =  groupedEvents.map(id => id)
   name: string;
   dateTime: Date;
   color: string; // #Hex

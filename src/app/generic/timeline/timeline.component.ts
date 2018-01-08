@@ -201,6 +201,10 @@ export class TimelineComponent implements OnInit {
     this.width = element.offsetWidth - this.margin.left - this.margin.right;
     this.height = element.offsetHeight - this.margin.top - this.margin.bottom;
 
+/*  TODO: Probably encapuslate all d3 related bussiness logic in seperate class.
+    Like: this.timelineSvg = new TimelineSvg(element);
+    this.timelineSvg.setData = this.data;
+    And 3 public methods: zoom(), highlightPoint(), invalidateDisplayList()*/
     this.svg = d3.select(this.svgElement.nativeElement)
       .attr('width', element.offsetWidth)
       .attr('height', element.offsetHeight);
@@ -531,6 +535,7 @@ export class TimelineComponent implements OnInit {
     const GROUPING_THRESHOLD = 20; // pixel, less than this goes to 1 group
 
     // start by creating group for each event
+    // TODO: refactor as single line: const results = events.map(event => new TimelineEventGroup(event))
     const results = events.map((event) => {
       const timelineEventGroup = <TimelineEventGroup>{...event, groupedEvents: [event]};
       return timelineEventGroup;
@@ -557,6 +562,7 @@ export class TimelineComponent implements OnInit {
     // name merged with <br> to display in html tooltip
     // if any hovered - group is hovered
     // if all selected - group is selected
+    // TODO: refactor: results.forEach((group) => group.invalidate())
     results.forEach((group) => {
       group.id = group.groupedEvents.reduce((accumulator, {id}) => (accumulator + id), '');
       group.name = group.groupedEvents.reduce((accumulator, {name}) => (accumulator + name + '<br>'), '');
