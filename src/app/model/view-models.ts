@@ -20,17 +20,17 @@ export interface TimelineEventVM {
 export class TimelineEventGroup {
   ids: string[];
   groupedEvents: TimelineEventVM[];
-  
+
   name: string;
   dateTime: Date;
   color: string; // #Hex
-  
+
   // Internal properties binded in timeline
   selected: boolean; // Indicate selected event (Click / Unclick )
   hovered: boolean;
   play: boolean;
-  
-  
+
+
   constructor(event: TimelineEventVM) {
     this.name = event.name;
     this.dateTime = event.dateTime;
@@ -40,14 +40,14 @@ export class TimelineEventGroup {
     this.play = false;
     this.groupedEvents = [event];
   }
-  
+
   invalidate() {
     this.ids = this.groupedEvents.map(event => event.id);
     // name merged with <br> to display in html tooltip
     // this.name = this.groupedEvents.reduce((accumulator, {name}) => (accumulator + name + '<br>'), '');
     this.name = this.groupedEvents.map(item => item.name).join('\n');
   }
-  
+
   toString(): string {
     return (this.ids.join('') + this.hovered + this.selected);
   }
