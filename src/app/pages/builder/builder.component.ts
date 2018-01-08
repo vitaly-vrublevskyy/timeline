@@ -64,12 +64,12 @@ export class BuilderComponent implements OnInit {
 
     this.timeline.removeEvents(ids);
   }
-
-  onSelectEvenEvent() {
+  
+  forceSelectEvent() {
     this.timeline.selectEvent(['2', '7', '9']);
   }
-
-  onUnSelectEvenEvent() {
+  
+  forceUnSelectEvenEvent() {
     this.timeline.unselectEvent(['2', '7', '9']);
   }
 
@@ -78,6 +78,10 @@ export class BuilderComponent implements OnInit {
   * */
   onSelectEvent(ids: string[]): void {
     this.logInfo(`Select Event: ${ids}`);
+  }
+  
+  onUnSelectEvent(ids: string[]): void {
+    this.logInfo(`UnSelect Event: ${ids}`);
   }
 
   onHoverInEvent(ids: string[]) {

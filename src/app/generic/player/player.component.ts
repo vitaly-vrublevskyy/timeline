@@ -1,6 +1,6 @@
 import {Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import * as d3 from 'd3';
-import {TimelineEventVM} from '../../model/view-models';
+import {TimelineEventGroup, TimelineEventVM} from "../../model/view-models";
 import {TimerObservable} from 'rxjs/observable/TimerObservable';
 import {Subscription} from 'rxjs/Subscription';
 
@@ -13,7 +13,7 @@ import {Subscription} from 'rxjs/Subscription';
 export class PlayerComponent implements OnInit, OnDestroy {
 
   @Input()
-  events: TimelineEventVM[];
+  events: TimelineEventGroup[];
 
   /*
   * Change player cursor

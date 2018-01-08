@@ -5,8 +5,8 @@
 
 <div class="timeline-component">
   <app-player
-    [events]="data.events"
-    (change)="highlightPoint($event)">
+    [events]="eventGroups"
+    (change)="onHighlightPlayingEvent($event)">
   </app-player>
 
   <div class="d3-timeline" #container>

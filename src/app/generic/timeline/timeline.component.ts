@@ -6,6 +6,7 @@ import { TimelineDataVM, TimelineEventGroup, TimelineEventVM } from '../../model
 import * as d3 from 'd3';
 import * as _ from 'lodash';
 import * as Color from 'color';
+import {PlayerComponent} from '../player/player.component';
 
 const format = d3.timeFormat('%d %b %Y %H:%M:%S');
 
@@ -48,8 +49,10 @@ export class TimelineComponent implements OnInit {
   
   @Output()
   hoverIn: EventEmitter<string[]> = new EventEmitter();
+  
   @Output()
   hoverOut: EventEmitter<string[]> = new EventEmitter();
+  
   /**
    *  Current time Scale Level in seconds.
    *  According to requirements: default scale of 10 seconds
@@ -59,10 +62,14 @@ export class TimelineComponent implements OnInit {
   /*
   * Access to View Template
   * */
-  @ViewChild('container')
-  private chartContainer: ElementRef;
-  @ViewChild('svg')
-  private svgElement: ElementRef;
+  
+  @ViewChild(PlayerComponent) private player: PlayerComponent;
+  
+  @ViewChild('container') private chartContainer: ElementRef;
+ 
+  @ViewChild('svg') private svgElement: ElementRef;
+  
+  
   /*
   * D3 related properties
   * */
@@ -156,23 +163,40 @@ export class TimelineComponent implements OnInit {
 
     this.invalidateDisplayList();
   }
+  
   /**
    * Event Handlers
    * */
-  /* HighlightPoint active | selected event  */
-  highlightPoint(index: number) {
-/* FIXME:     this.data.events.forEach((item: TimelineEventVM, i: number) => item.hovered = i === index);
-
+  
+  /**
+   * Highlight event circle while playing
+   * @param index: grouped item index in list of grouped events
+   * */
+  onHighlightPlayingEvent(index: number) {
+    this.hideNeedle();
+    
+    this.eventGroups.forEach((groupItem: TimelineEventGroup, i: number) => {
+      const isPlaying: boolean = i === index;
+      // detect change state
+      if (groupItem.play !== isPlaying) {
+        groupItem.play = isPlaying;
+        
+        isPlaying
+          ? this.select.emit(groupItem.ids)
+          : this.unselect.emit(groupItem.ids);
+      }
+    });
+  
     this.invalidateDisplayList();
-*/
+  
 
     // UnSelect prev
     if (index > 0) {
-      // FIXME: this.select.emit(this.data.events[index - 1]);
+      // FIXME: verify this.select.emit(this.data.events[index - 1]);
     }
     // Select current item
     if (index < this.data.events.length) {
-      // FIXME: this.select.emit(this.data.events[index]);
+      // FIXME: verify: this.select.emit(this.data.events[index]);
     }
     // TODO: indicate and animate active point
     // TODO: move needle to that point
@@ -181,10 +205,12 @@ export class TimelineComponent implements OnInit {
 
   onZoomChanged(zoomLvl: number) {
     console.log('Zoom Changes to', this.zoomLevel, 's.');
-    // FIXME:  Apply zoom in seconds
     this.zoomProgramatic(this.zoomConversionScale(this.zoomLevel));
   }
-
+  
+  /**
+   * Apply zoom in seconds
+  * */
   zoomProgramatic(k: number) {
     // const {x, y} = this.zoomTransform || d3.zoomIdentity;
     // const tt = d3.zoomTransform;
@@ -221,20 +247,7 @@ export class TimelineComponent implements OnInit {
       .attr('transform', `translate(${this.margin.left}, ${this.margin.top + 15})`)
       .on('mouseover', () => this.needle.style('display', null))
       .on('mouseout', () => this.hideNeedle())
-      .on('mousemove', () => {
-        const needleX = d3.mouse(this.timeline.node())[0];
-        const selection = d3.brushSelection(d3.select('.brush').node());
-        const [start, end] = selection || [0, 0];
-        const needleIsOverBrush = start < needleX && needleX < end;
-        // FIXME: indicate if hovered event (circle) as well
-
-        d3.selectAll('.needle-text')
-          .text(format(this.rescaledX().invert(needleX)));
-        this.needle
-          .style('cursor', 'none')
-          .style('display', needleIsOverBrush ? 'none' : 'initial')
-          .attr('transform', `translate(${needleX}, 0)`);
-      });
+      .on('mousemove', () => this.updateNeedleOnMouseMove());
 
     this.drawNeedle();
 
@@ -247,7 +260,26 @@ export class TimelineComponent implements OnInit {
     this.dataGroup = this.timeline.append('g')
       .attr('class', 'datagroup');
   }
-
+  
+  private updateNeedleOnMouseMove() {
+    if (this.player.isPlaying) {
+      this.hideNeedle();
+      return;
+    }
+    
+    const needleX = d3.mouse(this.timeline.node())[0];
+    const selection = d3.brushSelection(d3.select('.brush').node());
+    const [start, end] = selection || [0, 0];
+    const needleIsOverBrush = start < needleX && needleX < end;
+  
+    d3.selectAll('.needle-text')
+      .text(format(this.rescaledX().invert(needleX)));
+    this.needle
+      .style('cursor', 'none')
+      .style('display', needleIsOverBrush ? 'none' : 'initial')
+      .attr('transform', `translate(${needleX}, 0)`);
+  }
+  
   private hideNeedle() {
     this.needle.style('display', 'none');
   }
@@ -446,9 +478,11 @@ export class TimelineComponent implements OnInit {
 
   private getBackgroundColorForEvent(item: TimelineEventGroup): string {
     let hexColor = '#ffffff';
-    if (item.selected || item.hovered) {
+    if (item.selected || item.hovered || item.play) {
       hexColor = item.color;
-      if (item.hovered) {
+      if (item.play) {
+        hexColor = 'black'; // TODO: animation
+      } else if (item.hovered) {
         // Change color of hovered event to 10% lighter
         hexColor = Color(item.color).lighten(0.1).hex();
       }

@@ -6,10 +6,10 @@
     <i (click)="onRemoveOddEvent()" class="material-icons" title="Remove couple of events">remove_circle_outline</i>
     <strong>Remove</strong> odd events
 
-    <i (click)="onSelectEvenEvent()" class="material-icons">select_all</i>
+    <i (click)="forceSelectEvent()" class="material-icons">select_all</i>
     <strong>Select</strong> events with some id 2,7,9
 
-    <i (click)="onUnSelectEvenEvent()" class="material-icons">tab_unselected</i>
+    <i (click)="forceUnSelectEvenEvent()" class="material-icons">tab_unselected</i>
     <strong>Unselect</strong> events with some id 2,7,9
   </div>
 
@@ -27,6 +27,7 @@
   <app-timeline
     [data]="timelineData"
     (select)="onSelectEvent($event)"
+    (unselect)="onUnSelectEvent($event)"
     (hoverIn)="onHoverInEvent($event)"
     (hoverOut)="onHoverOutEvent($event)"
     class="timeline">
