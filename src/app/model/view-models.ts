@@ -37,6 +37,7 @@ export class TimelineEventGroup {
     this.color = event.color;
     this.selected = false;
     this.hovered = false;
+    this.play = false;
     this.groupedEvents = [event];
   }
   

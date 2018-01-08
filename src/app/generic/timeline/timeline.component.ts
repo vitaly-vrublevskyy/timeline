@@ -30,8 +30,13 @@ export class TimelineComponent implements OnInit {
    * Inputs
    * */
   @Input() public data: TimelineDataVM;
-  /* Whole Items */
+  
+  /* data collection grouped by scale range */
+  eventGroups: TimelineEventGroup[];
 
+  /* Notify about Click / Unclick  multiple events ids*/
+  @Input() private selection: TimelineEventVM[];
+  
   /**
    * Outputs
    * */
@@ -54,8 +59,6 @@ export class TimelineComponent implements OnInit {
   /*
   * Access to View Template
   * */
-  /* Notify about Click / Unclick  multiple events ids*/
-  @Input() private selection: TimelineEventVM[];
   @ViewChild('container')
   private chartContainer: ElementRef;
   @ViewChild('svg')
@@ -78,12 +81,14 @@ export class TimelineComponent implements OnInit {
   private zoomTransform: any;
   private circles: any;
   private tooltip: any;
-  //
-  // * 1 Event - 5 pixels
-  // * 2-5 Events - 10 pixels
-  // * 5-10 Events - 15 pixels
   private needle: any;
-  // * 10+ Event - 20 pixels
+
+/*
+  * 1 Event - 5 pixels
+  * 2-5 Events - 10 pixels
+  * 5-10 Events - 15 pixels
+  * 10+ Event - 20 pixels
+*/
   private radiusScale = d3.scaleThreshold()
     .domain([2, 6, 11])
     .range([5, 10, 15, 20]);
@@ -106,8 +111,8 @@ export class TimelineComponent implements OnInit {
     this.zoomLevel = 10;
 
     this.buildTimeline();
-
-    this.invalidateDisplayList();
+    
+    this.invalidateProperties();
   }
 
   /*
@@ -118,42 +123,42 @@ export class TimelineComponent implements OnInit {
       .concat(items)
       .orderBy('dateTime')
       .value();
-
-    this.invalidateDisplayList();
+    
+    this.invalidateProperties();
     // TODO: Calculate (and change if required) best scale for given events on timeline
   }
 
   removeEvents(ids: string[]) {
     this.data.events = this.data.events.filter(item => !ids.includes(item.id));
-    this.invalidateDisplayList();
+    this.invalidateProperties();
     // TODO: Calculate (and change if required) best scale for given events on timeline
   }
 
-  selectEvent(eventIds: string[]) {
-/* FIXME:    eventIds.forEach(id => {
-      const event: TimelineEventVM = _.find(this.data.events, {id: id});
-      if (event) {
-        event.selected = true;
+  selectEvent(ids: string[]) {
+    this.eventGroups.forEach(group => {
+      const containsSelectedId: boolean = group.ids.some(id => ids.includes(id));
+      if (containsSelectedId) {
+        group.selected = true;
       }
     });
 
-    this.invalidateDisplayList();*/
+    this.invalidateDisplayList();
   }
 
+
+  unselectEvent(ids: string[]) {
+    this.eventGroups.forEach(group => {
+      const containsUnSelectedId: boolean = group.ids.some(id => ids.includes(id));
+      if (containsUnSelectedId) {
+        group.selected = false;
+      }
+    });
+
+    this.invalidateDisplayList();
+  }
   /**
    * Event Handlers
    * */
-
-  unselectEvent(eventIds: string[]) {
-/* FIXME:    eventIds.forEach(id => {
-      const event: TimelineEventVM = _.find(this.data.events, {id: id});
-      if (event) {
-        event.selected = false;
-      }
-    });
-    this.invalidateDisplayList();*/
-  }
-
   /* HighlightPoint active | selected event  */
   highlightPoint(index: number) {
 /* FIXME:     this.data.events.forEach((item: TimelineEventVM, i: number) => item.hovered = i === index);
@@ -201,11 +206,7 @@ export class TimelineComponent implements OnInit {
     const element = this.chartContainer.nativeElement;
     this.width = element.offsetWidth - this.margin.left - this.margin.right;
     this.height = element.offsetHeight - this.margin.top - this.margin.bottom;
-
-/*  TODO: Probably encapuslate all d3 related bussiness logic in seperate class.
-    Like: this.timelineSvg = new Timeline(element);
-    this.timelineSvg.setData = this.data;
-    And 3 public methods: zoom(), highlightPoint(), invalidateDisplayList()*/
+    
     this.svg = d3.select(this.svgElement.nativeElement)
       .attr('width', element.offsetWidth)
       .attr('height', element.offsetHeight);
@@ -303,8 +304,7 @@ export class TimelineComponent implements OnInit {
             this.lastSelection.map(rescaled));
         }
 
-        this.invalidateDisplayList();
-
+        this.invalidateProperties();
       });
 
     this.svg.call(this.zoom);
@@ -394,10 +394,15 @@ export class TimelineComponent implements OnInit {
       .call(this.xAxis);
   }
 
+  
+  private invalidateProperties() {
+    this.eventGroups = this.unionFindAlg(this.data.events); // TODO: Inject Collection into player
+    this.invalidateDisplayList();
+  }
+  
   private invalidateDisplayList() {
-    const points = this.unionFindAlg(this.data.events); // TODO: Inject Collection into player
     const circles = this.dataGroup.selectAll('g.circleGroup')
-      .data(points, (d: TimelineEventGroup) => d.toString()); // unique hash to trigger redraw
+      .data(this.eventGroups, (d: TimelineEventGroup) => d.toString()); // unique hash to trigger redraw
 
     const circleGroupEnter = circles.enter().append('g')
       .attr('class', 'circleGroup')
