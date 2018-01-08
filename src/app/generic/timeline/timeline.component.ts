@@ -32,13 +32,15 @@ export class TimelineComponent implements OnInit {
   @Input() public data: TimelineDataVM;
   /* Whole Items */
 
-  // TODO: collection of grouped items by some range
   /**
    * Outputs
    * */
-    // FIXME: Refactor to list of ids
   @Output()
-  select: EventEmitter<TimelineEventVM> = new EventEmitter();
+  select: EventEmitter<string[]> = new EventEmitter();
+  
+  @Output()
+  unselect: EventEmitter<string[]> = new EventEmitter();
+  
   @Output()
   hoverIn: EventEmitter<string[]> = new EventEmitter();
   @Output()
@@ -106,9 +108,6 @@ export class TimelineComponent implements OnInit {
     this.buildTimeline();
 
     this.invalidateDisplayList();
-
-    // setTimeout(this.zoomProgramatic.bind(this), 3000, 0.1);
-    // setTimeout(this.zoomProgramatic.bind(this), 6000, 5);
   }
 
   /*
@@ -131,14 +130,14 @@ export class TimelineComponent implements OnInit {
   }
 
   selectEvent(eventIds: string[]) {
-    eventIds.forEach(id => {
+/* FIXME:    eventIds.forEach(id => {
       const event: TimelineEventVM = _.find(this.data.events, {id: id});
       if (event) {
         event.selected = true;
       }
     });
 
-    this.invalidateDisplayList();
+    this.invalidateDisplayList();*/
   }
 
   /**
@@ -146,34 +145,36 @@ export class TimelineComponent implements OnInit {
    * */
 
   unselectEvent(eventIds: string[]) {
-    eventIds.forEach(id => {
+/* FIXME:    eventIds.forEach(id => {
       const event: TimelineEventVM = _.find(this.data.events, {id: id});
       if (event) {
         event.selected = false;
       }
     });
-    this.invalidateDisplayList();
+    this.invalidateDisplayList();*/
   }
 
   /* HighlightPoint active | selected event  */
   highlightPoint(index: number) {
-    this.data.events.forEach((item: TimelineEventVM, i: number) => item.hovered = i === index);
+/* FIXME:     this.data.events.forEach((item: TimelineEventVM, i: number) => item.hovered = i === index);
 
     this.invalidateDisplayList();
+*/
 
     // UnSelect prev
     if (index > 0) {
-      this.select.emit(this.data.events[index - 1]);
+      // FIXME: this.select.emit(this.data.events[index - 1]);
     }
     // Select current item
     if (index < this.data.events.length) {
-      this.select.emit(this.data.events[index]);
+      // FIXME: this.select.emit(this.data.events[index]);
     }
     // TODO: indicate and animate active point
     // TODO: move needle to that point
+    // TODO: заскролити програмно шкалу в конкретну точку із index
   }
 
-  onZoomChanged() {
+  onZoomChanged(zoomLvl: number) {
     console.log('Zoom Changes to', this.zoomLevel, 's.');
     // FIXME:  Apply zoom in seconds
     this.zoomProgramatic(this.zoomConversionScale(this.zoomLevel));
@@ -202,7 +203,7 @@ export class TimelineComponent implements OnInit {
     this.height = element.offsetHeight - this.margin.top - this.margin.bottom;
 
 /*  TODO: Probably encapuslate all d3 related bussiness logic in seperate class.
-    Like: this.timelineSvg = new TimelineSvg(element);
+    Like: this.timelineSvg = new Timeline(element);
     this.timelineSvg.setData = this.data;
     And 3 public methods: zoom(), highlightPoint(), invalidateDisplayList()*/
     this.svg = d3.select(this.svgElement.nativeElement)
@@ -394,9 +395,9 @@ export class TimelineComponent implements OnInit {
   }
 
   private invalidateDisplayList() {
-    const points = this.unionFindAlg(this.data.events);
+    const points = this.unionFindAlg(this.data.events); // TODO: Inject Collection into player
     const circles = this.dataGroup.selectAll('g.circleGroup')
-      .data(points, (d) => (d.id + d.hovered + d.selected)); // unique hash to trigger redraw
+      .data(points, (d: TimelineEventGroup) => d.toString()); // unique hash to trigger redraw
 
     const circleGroupEnter = circles.enter().append('g')
       .attr('class', 'circleGroup')
@@ -451,30 +452,29 @@ export class TimelineComponent implements OnInit {
   }
 
   private handleClick(group: TimelineEventGroup) {
-    group.groupedEvents.forEach((e) => {
+    group.selected = !group.selected;
+/* FIXME:    group.groupedEvents.forEach((e) => {
       e.selected = !group.selected;
       e.hovered = false;
-    });
+    });*/
 
-    // TODO
-
-    group.groupedEvents.forEach(item => this.select.emit(item));
-    // item.hovered = false;
-    // this.select.emit(item);
-
+  
+    group.selected
+      ? this.select.emit(group.ids)
+      : this.unselect.emit(group.ids);
+    
     this.invalidateDisplayList();
   }
 
   private handleMouseOver(group: TimelineEventGroup) {
-    group.groupedEvents.forEach((e) => {
+/* FIXME:   group.groupedEvents.forEach((e) => {
       e.hovered = true;
-    });
+    });*/
 
     this.invalidateDisplayList();
     this.showTooltip(group);
 
-    const ids: string[] = group.groupedEvents.map(item => item.id);
-    this.hoverIn.emit(ids);
+    this.hoverIn.emit(group.ids);
   }
 
   private showTooltip(item: TimelineEventGroup) {
@@ -492,9 +492,9 @@ export class TimelineComponent implements OnInit {
   }
 
   private handleMouseOut(group: TimelineEventGroup) {
-    group.groupedEvents.forEach((e) => {
+/* FIXME:    group.groupedEvents.forEach((e) => {
       e.hovered = false;
-    });
+    });*/
 
     this.invalidateDisplayList();
     this.hideTooltip();
@@ -512,7 +512,7 @@ export class TimelineComponent implements OnInit {
   }
 
   private clearSelection() {
-    this.data.events.forEach((d) => d.selected = false);
+    // FIXME: this.data.events.forEach((d) => d.selected = false);
     this.invalidateDisplayList();
   }
 
@@ -522,10 +522,10 @@ export class TimelineComponent implements OnInit {
     // Select items in range
     this.data.events.forEach((item: TimelineEventVM) => {
       const isSelected: boolean = (item.dateTime.getTime() >= start && item.dateTime.getTime() <= end);
-      if (item.selected !== isSelected) {
+/*    FIXME:  if (item.selected !== isSelected) {
         item.selected = isSelected;
-        this.select.emit(item);
-      }
+        // FIXME: this.select.emit(item);
+      }*/
     });
 
     this.invalidateDisplayList();
@@ -535,13 +535,9 @@ export class TimelineComponent implements OnInit {
     const GROUPING_THRESHOLD = 20; // pixel, less than this goes to 1 group
 
     // start by creating group for each event
-    // TODO: refactor as single line: const results = events.map(event => new TimelineEventGroup(event))
-    const results = events.map((event) => {
-      const timelineEventGroup = <TimelineEventGroup>{...event, groupedEvents: [event]};
-      return timelineEventGroup;
-    });
+    const results = events.map((event: TimelineEventVM) => new TimelineEventGroup(event));
 
-// TODO check with empty/ 1 element data
+    // TODO check with empty/ 1 element data
     for (let i = 1; i < results.length; i++) {
       const pivotGroup = results[i - 1];
       const currentGroup = results[i];
@@ -558,18 +554,8 @@ export class TimelineComponent implements OnInit {
       }
     }
 
-
-    // name merged with <br> to display in html tooltip
-    // if any hovered - group is hovered
-    // if all selected - group is selected
-    // TODO: refactor: results.forEach((group) => group.invalidate())
-    results.forEach((group) => {
-      group.id = group.groupedEvents.reduce((accumulator, {id}) => (accumulator + id), '');
-      group.name = group.groupedEvents.reduce((accumulator, {name}) => (accumulator + name + '<br>'), '');
-      group.selected = group.groupedEvents.reduce((accumulator, {selected}) => (accumulator && selected), true);
-      group.hovered = group.groupedEvents.reduce((accumulator, {hovered}) => (accumulator || hovered), false);
-    });
-
+    results.forEach((group: TimelineEventGroup) => group.invalidate());
+ 
     return results;
   }
 }

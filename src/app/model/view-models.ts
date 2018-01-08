@@ -15,19 +15,39 @@ export interface TimelineEventVM {
   name: string;
   dateTime: Date;
   color: string; // #Hex
-  // Internal properties binded in timeline
-  selected?: boolean; // Indicate selected event (Click / Unclick )
-  hovered?: boolean;
 }
 
-// TODO: refactor to encapsulate all related logic, like: export class ... with constructor and invalidate() methods
-export interface TimelineEventGroup {
-  id: string; // TODO: refactor ids: string[] =  groupedEvents.map(id => id)
+export class TimelineEventGroup {
+  ids: string[];
+  groupedEvents: TimelineEventVM[];
+  
   name: string;
   dateTime: Date;
   color: string; // #Hex
+  
   // Internal properties binded in timeline
-  selected?: boolean; // Indicate selected event (Click / Unclick )
-  hovered?: boolean;
-  groupedEvents: TimelineEventVM[];
+  selected: boolean; // Indicate selected event (Click / Unclick )
+  hovered: boolean;
+  play: boolean;
+  
+  
+  constructor(event: TimelineEventVM) {
+    this.name = event.name;
+    this.dateTime = event.dateTime;
+    this.color = event.color;
+    this.selected = false;
+    this.hovered = false;
+    this.groupedEvents = [event];
+  }
+  
+  invalidate() {
+    this.ids = this.groupedEvents.map(event => event.id);
+    // name merged with <br> to display in html tooltip
+    // this.name = this.groupedEvents.reduce((accumulator, {name}) => (accumulator + name + '<br>'), '');
+    this.name = this.groupedEvents.map(item => item.name).join('\n');
+  }
+  
+  toString(): string {
+    return (this.ids.join('') + this.hovered + this.selected);
+  }
 }

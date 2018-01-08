@@ -73,6 +73,7 @@ $blue: #83A2BE;
   border-radius: 5px;
   pointer-events: none;
   color: white;
+  white-space: pre-wrap;
   &:after {
     content: "";
     display: inline-block;

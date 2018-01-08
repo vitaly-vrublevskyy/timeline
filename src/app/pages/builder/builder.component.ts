@@ -84,9 +84,8 @@ export class BuilderComponent implements OnInit {
   /*
   * Timeline Event Handlers
   * */
-  onSelectEvent(item: TimelineEventVM): void {
-    const state: string = item && item.selected ? 'Select' : 'UnSelect';
-    this.logInfo(`${state} Event: ${item.id}`);
+  onSelectEvent(ids: string[]): void {
+    this.logInfo(`Select Event: ${ids}`);
   }
 
   onHoverInEvent(ids: string[]) {
