@@ -184,7 +184,6 @@ export class TimelineComponent implements OnInit {
    * @param index: grouped item index in list of grouped events
    * */
   onHighlightPlayingEvent(index: number) {
-    this.hideNeedle();
 
     this.eventGroups.forEach((groupItem: TimelineEventGroup, i: number) => {
       const isPlaying: boolean = i === index;
@@ -200,17 +199,9 @@ export class TimelineComponent implements OnInit {
 
     this.invalidateDisplayList();
 
-
-    // UnSelect prev
-    if (index > 0) {
-      // FIXME: verify this.select.emit(this.data.events[index - 1]);
-    }
-    // Select current item
-    if (index < this.data.events.length) {
-      // FIXME: verify: this.select.emit(this.data.events[index]);
-    }
-    // TODO: indicate and animate active point
+    this.hideNeedle(); // Temporary before not implemeted before steps
     // TODO: move needle to that point
+    // TODO: indicate and animate active point
     // TODO: заскролити програмно шкалу в конкретну точку із index
   }
 
