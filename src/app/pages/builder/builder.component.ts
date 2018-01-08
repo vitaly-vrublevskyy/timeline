@@ -66,19 +66,11 @@ export class BuilderComponent implements OnInit {
   }
 
   onSelectEvenEvent() {
-    const ids: string[] = this.timelineData.events
-      .map(item => item.id)
-      .filter((item, index: number) => index % 2 === 1);
-
-    this.timeline.selectEvent(ids);
+    this.timeline.selectEvent(['2', '7', '9']);
   }
 
   onUnSelectEvenEvent() {
-    const ids: string[] = this.timelineData.events
-      .map(item => item.id)
-      .filter((item, index: number) => index % 2 === 1);
-
-    this.timeline.unselectEvent(ids);
+    this.timeline.unselectEvent(['2', '7', '9']);
   }
 
   /*
@@ -97,7 +89,6 @@ export class BuilderComponent implements OnInit {
   }
 
   private logInfo(message: string) {
-
     const options = {hour: 'numeric', minute: 'numeric', second: 'numeric'};
     const timestamp = new Date().toLocaleTimeString('en-US', options);
     const line = `[INFO] - ${timestamp}: ${message}`;
