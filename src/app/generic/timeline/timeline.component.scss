@@ -1,4 +1,5 @@
 $blue: #83A2BE;
+$blue2: #5093E1;
 
 .timeline-component {
   display: flex;
@@ -35,7 +36,7 @@ $blue: #83A2BE;
 
   &.handle {
     //stroke: #5093E1;
-    fill: #5093E1;
+    fill: $blue2;
   }
   &.overlay {
     cursor: none;
@@ -44,6 +45,12 @@ $blue: #83A2BE;
 .handle--custom{
   fill:$blue;
   font-size: 9px;
+  font-family: sans-serif;
+}
+
+.brush-duration{
+  fill:$blue2;
+  font-size: 10px;
   font-family: sans-serif;
 }
 

@@ -7,6 +7,7 @@ import * as d3 from 'd3';
 import * as _ from 'lodash';
 import * as Color from 'color';
 import { PlayerComponent } from '../player/player.component';
+import * as moment from 'moment';
 
 const format = d3.timeFormat('%d %b %Y %H:%M:%S');
 
@@ -93,6 +94,7 @@ export class TimelineComponent implements OnInit {
     .range(ZOOM_LEVELS);
   private margin: any = {top: 0, bottom: 0, left: 0, right: 0};
   private brushHandleLabels: any;
+  private brushDurationLabel: any;
   private progressCircle: any;
   private PROGRESS_CIRCLE_ARC: any;
 
@@ -168,8 +170,21 @@ export class TimelineComponent implements OnInit {
     this.hideNeedle(); // Temporary before not implemeted next TODO:
     // TODO: move needle to that point
   }
-  
-  
+
+  onZoomChanged(zoomLvl: number) {
+    this.zoomProgramatic(this.zoomConversionScale(this.zoomLevel));
+  }
+
+  /**
+   * Apply zoom in seconds
+   * */
+  zoomProgramatic(k: number) {
+    const {x, y} = this.zoomTransform || d3.zoomIdentity;
+    // this.zoom.scaleTo(this.svg, k);
+    this.svg.transition().duration(750)
+      .call(this.zoom.scaleTo, k);
+  }
+
   private updatePlayingEvent(groupItem: TimelineEventGroup, groupIndex: number, activeGroupIndex: number) {
     const isPlaying: boolean = groupIndex === activeGroupIndex;
     // detect change state
@@ -184,20 +199,6 @@ export class TimelineComponent implements OnInit {
         this.unselect.emit(groupItem.ids);
       }
     }
-  }
-  
-  onZoomChanged(zoomLvl: number) {
-    this.zoomProgramatic(this.zoomConversionScale(this.zoomLevel));
-  }
-
-  /**
-   * Apply zoom in seconds
-   * */
-  zoomProgramatic(k: number) {
-    const {x, y} = this.zoomTransform || d3.zoomIdentity;
-    // this.zoom.scaleTo(this.svg, k);
-    this.svg.transition().duration(750)
-      .call(this.zoom.scaleTo, k);
   }
 
   /**
@@ -378,9 +379,11 @@ export class TimelineComponent implements OnInit {
       .on('brush', () => {
         if (!d3.event.selection) {
           this.brushHandleLabels.attr('display', 'none');
+          this.brushDurationLabel.attr('display', 'none');
         } else {
           this.hideNeedle();
-          this.brushHandleLabels.attr('display', null)
+          this.brushHandleLabels
+            .attr('display', null)
             .attr('transform', (d, i) => {
               return `translate(${d3.event.selection[i]},0)`;
             })
@@ -390,6 +393,16 @@ export class TimelineComponent implements OnInit {
             .text(({type}) => {
               const index = type === 'w' ? 0 : 1;
               return format(this.rescaledX().invert(d3.event.selection[index]));
+            });
+          this.brushDurationLabel
+            .attr('display', null)
+            .attr('x', () => {
+              return d3.event.selection[0] / 2 + d3.event.selection[1] / 2;
+            })
+            .text(() => {
+              const [start, end] = d3.event.selection.map(this.rescaledX().invert);
+              const duration = start.getTime() - end.getTime();
+              return moment.duration(duration).humanize();
             });
         }
       })
@@ -423,7 +436,17 @@ export class TimelineComponent implements OnInit {
       .data([{type: 'w'}, {type: 'e'}])
       .enter().append('text')
       .attr('class', 'handle--custom')
+      .attr('pointer-events', 'none')
       .attr('y', '10')
+      .text('');
+
+
+    this.brushDurationLabel = this.brushGroup
+      .append('text')
+      .attr('class', 'brush-duration')
+      .attr('text-anchor', 'middle')
+      .attr('pointer-events', 'none')
+      .attr('y', '-6')
       .text('');
 
     this.brushGroup.call(this.brush);
