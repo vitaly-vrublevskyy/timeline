@@ -29,16 +29,13 @@ export class TimelineEventGroup {
     this.name = event.name;
     this.dateTime = event.dateTime;
     this.color = event.color;
-    this._selected = false;
-    this._hovered = false;
-    this._play = false;
     this.groupedEvents = [event];
 
     this.invalidate();
   }
 
-  // Internal properties binded in timeline
-  private _selected: boolean; // Indicate selected event (Click / Unclick )
+  
+  private _selected: boolean = false;
 
   get selected(): boolean {
     return this._selected;
@@ -49,7 +46,7 @@ export class TimelineEventGroup {
     this.invalidate();
   }
 
-  private _hovered: boolean;
+  private _hovered: boolean = false;
 
   get hovered(): boolean {
     return this._hovered;
@@ -60,7 +57,7 @@ export class TimelineEventGroup {
     this.invalidate();
   }
 
-  private _play: boolean;
+  private _play: boolean = false;
 
   get play(): boolean {
     return this._play;
@@ -73,11 +70,8 @@ export class TimelineEventGroup {
 
   invalidate() {
     this.ids = this.groupedEvents.map(event => event.id);
-    // name merged with <br> to display in html tooltip
-    // this.name = this.groupedEvents.reduce((accumulator, {name}) => (accumulator + name + '<br>'), '');
     this.name = this.groupedEvents.map(item => item.name).join('\n');
     this.hash = JSON.parse(JSON.stringify(this.hs()));
-    console.log(this.hash);
   }
 
   toString(): string {

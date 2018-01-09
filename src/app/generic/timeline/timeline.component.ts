@@ -156,45 +156,36 @@ export class TimelineComponent implements OnInit {
 
   /**
    * Highlight event circle while playing
-   * @param index: grouped item index in list of grouped events
+   * @param index: playing group index in list of grouped events
    * */
   onHighlightPlayingEvent(index: number) {
-
-    this.eventGroups.forEach((groupItem: TimelineEventGroup, i: number) => {
-      const isPlaying: boolean = i === index;
-      // detect change state
-
-      if (isPlaying) {
-        this.centerEvent(groupItem);
-
-        setTimeout(() => {
-          this.progressCircle
-            .attr('opacity', 1);
-          setTimeout(() => {
-            this.progressCircle
-              .attr('opacity', 0);
-
-          }, 500);
-        }, 500);
-
-      }
-      if (groupItem.play !== isPlaying) {
-        groupItem.play = isPlaying;
-
-        isPlaying
-          ? this.select.emit(groupItem.ids)
-          : this.unselect.emit(groupItem.ids);
-      }
-    });
+    this.eventGroups.forEach((groupItem: TimelineEventGroup, i: number) =>
+      this.updatePlayingEvent(groupItem, i, index)
+    );
 
     this.invalidateDisplayList();
 
-    this.hideNeedle(); // Temporary before not implemeted before steps
+    this.hideNeedle(); // Temporary before not implemeted next TODO:
     // TODO: move needle to that point
-    // TODO: indicate and animate active point
-    // TODO: заскролити програмно шкалу в конкретну точку із index
   }
-
+  
+  
+  private updatePlayingEvent(groupItem: TimelineEventGroup, groupIndex: number, activeGroupIndex: number) {
+    const isPlaying: boolean = groupIndex === activeGroupIndex;
+    // detect change state
+    if (groupItem.play !== isPlaying) {
+      groupItem.play = isPlaying;
+      if (isPlaying) {
+        this.centerEvent(groupItem);
+        this.animatePlayingCircle();
+        this.select.emit(groupItem.ids);
+      } else {
+        console.log('Unselect', groupItem.ids);
+        this.unselect.emit(groupItem.ids);
+      }
+    }
+  }
+  
   onZoomChanged(zoomLvl: number) {
     this.zoomProgramatic(this.zoomConversionScale(this.zoomLevel));
   }
@@ -207,20 +198,6 @@ export class TimelineComponent implements OnInit {
     // this.zoom.scaleTo(this.svg, k);
     this.svg.transition().duration(750)
       .call(this.zoom.scaleTo, k);
-  }
-
-  centerEvent(groupEvent: TimelineEventGroup) {
-    const {x, y, k} = this.zoomTransform || d3.zoomIdentity;
-    const itemCurrentX = this.rescaledX()(groupEvent.dateTime);
-    const delta = (+this.width / 2 - itemCurrentX) / k;
-
-
-    // this.svg
-    //   .call(this.zoom.translateTo, (this.width / 2) / k + delta, 0);
-    //
-    this.svg
-      .transition().duration(500)
-      .call(this.zoom.translateBy, delta, 0);
   }
 
   /**
@@ -561,14 +538,9 @@ export class TimelineComponent implements OnInit {
   }
 
   private handleMouseOver(group: TimelineEventGroup) {
-    /* FIXME:   group.groupedEvents.forEach((e) => {
-          e.hovered = true;
-        });*/
-
     group.hovered = true;
     group.invalidate();
-    // group.groupedEvents.forEach((e) => e.hovered = true);
-// this.invalidateProperties();
+
     this.invalidateDisplayList();
     this.showTooltip(group);
 
@@ -591,9 +563,6 @@ export class TimelineComponent implements OnInit {
   }
 
   private handleMouseOut(group: TimelineEventGroup) {
-    /* FIXME:    group.groupedEvents.forEach((e) => {
-          e.hovered = false;
-        });*/
     group.hovered = false;
     group.invalidate();
 
@@ -656,5 +625,24 @@ export class TimelineComponent implements OnInit {
     results.forEach((group: TimelineEventGroup) => group.invalidate());
 
     return results;
+  }
+
+  private centerEvent(groupEvent: TimelineEventGroup) {
+    const {x, y, k} = this.zoomTransform || d3.zoomIdentity;
+    const itemCurrentX = this.rescaledX()(groupEvent.dateTime);
+    const delta = (+this.width / 2 - itemCurrentX) / k;
+
+    this.svg
+      .transition().duration(500)
+      .call(this.zoom.translateBy, delta, 0);
+  }
+
+  private animatePlayingCircle() {
+    setTimeout(() => {
+      this.progressCircle.attr('opacity', 1);
+      setTimeout(() => {
+        this.progressCircle.attr('opacity', 0);
+      }, 500);
+    }, 500);
   }
 }
