@@ -110,6 +110,8 @@ export class TimelineComponent implements OnInit {
     this.buildTimeline();
 
     this.invalidateProperties();
+
+    setTimeout(this.fitAllEvents.bind(this), 5000);
   }
 
   /*
@@ -122,6 +124,7 @@ export class TimelineComponent implements OnInit {
       .value();
 
     this.invalidateProperties();
+    this.fitAllEvents();
     // TODO: Calculate (and change if required) best scale for given events on timeline
   }
 
@@ -529,6 +532,26 @@ export class TimelineComponent implements OnInit {
         return this.getBackgroundColorForEvent(d)
       });
 
+  }
+
+  private fitAllEvents(): void {
+    // first reset zoom to 0,0,1
+    this.svg.call(this.zoom.transform, d3.zoomIdentity);
+
+    const min = d3.min(this.eventGroups, (e: TimelineEventGroup) => e.dateTime);
+    const max = d3.max(this.eventGroups, (e: TimelineEventGroup) => e.dateTime);
+
+    const rangeDuration = max.getTime() - min.getTime();
+    const paddingDuration = Math.floor(rangeDuration / 10);
+
+
+    const newMin = new Date(min.getTime() - paddingDuration);
+    const newMax = new Date(max.getTime() + paddingDuration);
+    this.xScale.domain([newMin, newMax]);
+    this.xAxisGroup
+      .call(this.xAxis.scale(this.xScale));
+
+    this.invalidateDisplayList();
   }
 
   private getBackgroundColorForEvent(item: TimelineEventGroup): string {

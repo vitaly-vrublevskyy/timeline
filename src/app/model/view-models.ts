@@ -34,8 +34,8 @@ export class TimelineEventGroup {
     this.invalidate();
   }
 
-  
-  private _selected: boolean = false;
+
+  private _selected = false;
 
   get selected(): boolean {
     return this._selected;
@@ -46,7 +46,7 @@ export class TimelineEventGroup {
     this.invalidate();
   }
 
-  private _hovered: boolean = false;
+  private _hovered = false;
 
   get hovered(): boolean {
     return this._hovered;
@@ -57,7 +57,7 @@ export class TimelineEventGroup {
     this.invalidate();
   }
 
-  private _play: boolean = false;
+  private _play = false;
 
   get play(): boolean {
     return this._play;
