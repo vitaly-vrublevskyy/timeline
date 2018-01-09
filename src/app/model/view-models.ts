@@ -20,25 +20,55 @@ export interface TimelineEventVM {
 export class TimelineEventGroup {
   ids: string[];
   groupedEvents: TimelineEventVM[];
-
   name: string;
   dateTime: Date;
   color: string; // #Hex
-
-  // Internal properties binded in timeline
-  selected: boolean; // Indicate selected event (Click / Unclick )
-  hovered: boolean;
-  play: boolean;
-
+  hash: string;
 
   constructor(event: TimelineEventVM) {
     this.name = event.name;
     this.dateTime = event.dateTime;
     this.color = event.color;
-    this.selected = false;
-    this.hovered = false;
-    this.play = false;
+    this._selected = false;
+    this._hovered = false;
+    this._play = false;
     this.groupedEvents = [event];
+
+    this.invalidate();
+  }
+
+  // Internal properties binded in timeline
+  private _selected: boolean; // Indicate selected event (Click / Unclick )
+
+  get selected(): boolean {
+    return this._selected;
+  }
+
+  set selected(value: boolean) {
+    this._selected = value;
+    this.invalidate();
+  }
+
+  private _hovered: boolean;
+
+  get hovered(): boolean {
+    return this._hovered;
+  }
+
+  set hovered(value: boolean) {
+    this._hovered = value;
+    this.invalidate();
+  }
+
+  private _play: boolean;
+
+  get play(): boolean {
+    return this._play;
+  }
+
+  set play(value: boolean) {
+    this._play = value;
+    this.invalidate();
   }
 
   invalidate() {
@@ -46,9 +76,15 @@ export class TimelineEventGroup {
     // name merged with <br> to display in html tooltip
     // this.name = this.groupedEvents.reduce((accumulator, {name}) => (accumulator + name + '<br>'), '');
     this.name = this.groupedEvents.map(item => item.name).join('\n');
+    this.hash = JSON.parse(JSON.stringify(this.hs()));
+    console.log(this.hash);
   }
 
   toString(): string {
-    return (this.ids.join('') + this.hovered + this.selected);
+    return (this.ids.join('') + this._hovered + this._selected);
+  }
+
+  hs(): string {
+    return '#' + this._play + this._hovered + this._selected + this.ids.join('-');
   }
 }
