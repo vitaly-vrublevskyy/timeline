@@ -10,7 +10,7 @@ import {Subscription} from 'rxjs/Subscription';
   styleUrls: ['./player.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class PlayerComponent implements OnInit, OnDestroy {
+export class PlayerComponent implements OnDestroy {
 
   @Input()
   events: TimelineEventGroup[];
@@ -20,6 +20,9 @@ export class PlayerComponent implements OnInit, OnDestroy {
   * */
   @Output()
   change: EventEmitter<number> = new EventEmitter<number>();
+  
+  @Output()
+  select: EventEmitter<number> = new EventEmitter<number>();
 
   isPlaying: boolean;
 
@@ -43,11 +46,7 @@ export class PlayerComponent implements OnInit, OnDestroy {
    * Player related properties
    * */
   private playbackSubscription: Subscription;
-
-  constructor() { }
-
-  ngOnInit() {
-  }
+  
 
   ngOnDestroy() {
     // Unsubscribe timer
@@ -87,13 +86,13 @@ export class PlayerComponent implements OnInit, OnDestroy {
   * */
   goToPrevious() {
     if (this.needleIndex > 0) {
-      this.change.emit(--this.needleIndex);
+      this.select.emit(--this.needleIndex);
     }
   }
 
   goToNext() {
     if (this.needleIndex < this.events.length - 1) {
-      this.change.emit(++this.needleIndex);
+      this.select.emit(++this.needleIndex);
     }
   }
 

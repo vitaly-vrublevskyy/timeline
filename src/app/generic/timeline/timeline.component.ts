@@ -153,38 +153,38 @@ export class TimelineComponent implements OnInit {
 
     this.invalidateDisplayList();
   }
-
+  
+  onSelectEventByIndex(index: number) {
+    this.clearSelection();
+    const group: TimelineEventGroup = this.eventGroups[index];
+    this.handleClick(group);
+  }
+  
   /**
    * Highlight event circle while playing
-   * @param index: playing group index in list of grouped events
+   * @param i: playing group index in list of grouped events
    * */
-  onHighlightPlayingEvent(index: number) {
-    this.eventGroups.forEach((groupItem: TimelineEventGroup, i: number) =>
-      this.updatePlayingEvent(groupItem, i, index)
-    );
-
+  onHighlightPlayingEvent(i: number) {
+    // Unselect Previous
+    if (i > 0) {
+      this.unselect.emit(this.eventGroups[i - 1].ids);
+    }
+    
+    // Select active playing event
+    if (i < this.eventGroups.length) {
+      const group: TimelineEventGroup = this.eventGroups[i];
+      group.play = true;
+      this.centerEvent(group);
+      this.animatePlayingCircle();
+      this.select.emit(group.ids);
+    }
+    
     this.invalidateDisplayList();
 
     this.hideNeedle(); // Temporary before not implemeted next TODO:
     // TODO: move needle to that point
   }
   
-  
-  private updatePlayingEvent(groupItem: TimelineEventGroup, groupIndex: number, activeGroupIndex: number) {
-    const isPlaying: boolean = groupIndex === activeGroupIndex;
-    // detect change state
-    if (groupItem.play !== isPlaying) {
-      groupItem.play = isPlaying;
-      if (isPlaying) {
-        this.centerEvent(groupItem);
-        this.animatePlayingCircle();
-        this.select.emit(groupItem.ids);
-      } else {
-        console.log('Unselect', groupItem.ids);
-        this.unselect.emit(groupItem.ids);
-      }
-    }
-  }
   
   onZoomChanged(zoomLvl: number) {
     this.zoomProgramatic(this.zoomConversionScale(this.zoomLevel));
@@ -521,14 +521,9 @@ export class TimelineComponent implements OnInit {
     }
     return hexColor;
   }
-
+  
   private handleClick(group: TimelineEventGroup) {
     group.selected = !group.selected;
-    /* FIXME:    group.groupedEvents.forEach((e) => {
-          e.selected = !group.selected;
-          e.hovered = false;
-        });*/
-
 
     group.selected
       ? this.select.emit(group.ids)
@@ -580,7 +575,12 @@ export class TimelineComponent implements OnInit {
   }
 
   private clearSelection() {
-    this.eventGroups.forEach((d) => d.selected = false);
+    this.eventGroups.forEach((d) => {
+      if (d.selected) {
+        this.unselect.emit(d.ids);
+      }
+      d.selected = false;
+    });
     this.invalidateDisplayList();
   }
 
