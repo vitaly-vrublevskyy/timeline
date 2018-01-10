@@ -49,7 +49,7 @@ export class PlayerComponent implements OnDestroy {
   }
 
   
-  get selectedItemIndex (): number {
+  get selectedEventIndex (): number {
     return _.findIndex(this.events, {selected: true});
   }
   
@@ -76,7 +76,7 @@ export class PlayerComponent implements OnDestroy {
     this.isPlaying = !this.isPlaying;
 
     if (this.isPlaying) {
-      this.startPlayer();
+      this.startPlayer(this.speed);
     } else if (this.playbackSubscription) {
       this.playbackSubscription.unsubscribe();
     }
@@ -87,7 +87,7 @@ export class PlayerComponent implements OnDestroy {
       this.playbackSubscription.unsubscribe();
     }
 
-    const offset: number = (this.selectedItemIndex !== -1) ? this.selectedItemIndex : 0;
+    const offset: number = (this.selectedEventIndex !== -1) ? this.selectedEventIndex : 0;
     const times: number = (this.events.length - offset) + 1;
     const delay: number = this.convertSpeedIntoMilliseconds(speed);
     this.playbackSubscription = TimerObservable.create(0, delay)
@@ -106,12 +106,14 @@ export class PlayerComponent implements OnDestroy {
   * Needle Position
   * */
   goToPrevious() {
+    this.needleIndex = this.selectedEventIndex;
     if (this.needleIndex > 0) {
       this.select.emit(--this.needleIndex);
     }
   }
 
   goToNext() {
+    this.needleIndex = this.selectedEventIndex;
     if (this.needleIndex < this.events.length - 1) {
       this.select.emit(++this.needleIndex);
     }
