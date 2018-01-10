@@ -676,10 +676,10 @@ export class TimelineComponent implements OnInit {
     // Select items in range
     this.eventGroups.forEach((item: TimelineEventGroup) => {
       const isSelected: boolean = (item.dateTime.getTime() >= start && item.dateTime.getTime() <= end);
-      /*    FIXME:  if (item.selected !== isSelected) {
-              // FIXME: this.select.emit(item);
-            }*/
       item.selected = isSelected;
+      item.selected
+        ? this.select.emit(item.ids)
+        : this.unselect.emit(item.ids);
     });
 
     this.invalidateDisplayList();
@@ -727,8 +727,8 @@ export class TimelineComponent implements OnInit {
     setTimeout(() => {
       const radius = this.radiusScale(group.groupedEvents.length) + (group.hovered ? 5 : 0);
       this.progressCircle
-        .attr('opacity', 1)
-        .attr('transform', `translate(${this.width / 2}, 61) scale(${ (radius + 2) / 20})`)
+        .attr('opacity', .5)
+        .attr('transform', `translate(${this.width / 2}, 61) scale(${ (radius + 5) / 20})`)
       setTimeout(() => {
         this.progressCircle.attr('opacity', 0);
       }, 500);
