@@ -177,7 +177,7 @@ export class TimelineComponent implements OnInit {
       const group: TimelineEventGroup = this.eventGroups[i];
       group.play = true;
       this.centerEvent(group);
-      this.animatePlayingCircle();
+      this.animatePlayingCircle(group);
       this.select.emit(group.ids);
     }
 
@@ -285,10 +285,9 @@ export class TimelineComponent implements OnInit {
 
     this.progressCircle = this.svg.append('path')
       .datum({endAngle: 0, startAngle: 0})
-      .style('fill', '#f0f0f0')
+      .style('fill', '#999999')
       .attr('opacity', 0)
-      .attr('transform', `translate(${this.width / 2}, 60)`)
-      .attr('x', -2 + this.width / 2)
+      .attr('transform', `translate(${this.width / 2}, 61)`)
       .attr('d', this.PROGRESS_CIRCLE_ARC);
 
     d3.interval(() => {
@@ -315,7 +314,7 @@ export class TimelineComponent implements OnInit {
         .attrTween('d', arcTween(degToRad(360), 'endAngle'));
 
       this.progressCircle.transition()
-        .delay(250)
+        .delay(300)
         .duration(250)
         .attrTween('d', arcTween(degToRad(360), 'startAngle'));
     }, 500);
@@ -724,9 +723,12 @@ export class TimelineComponent implements OnInit {
       .call(this.zoom.translateBy, delta, 0);
   }
 
-  private animatePlayingCircle() {
+  private animatePlayingCircle(group: TimelineEventGroup) {
     setTimeout(() => {
-      this.progressCircle.attr('opacity', 1);
+      const radius = this.radiusScale(group.groupedEvents.length) + (group.hovered ? 5 : 0);
+      this.progressCircle
+        .attr('opacity', 1)
+        .attr('transform', `translate(${this.width / 2}, 61) scale(${ (radius + 2) / 20})`)
       setTimeout(() => {
         this.progressCircle.attr('opacity', 0);
       }, 500);
