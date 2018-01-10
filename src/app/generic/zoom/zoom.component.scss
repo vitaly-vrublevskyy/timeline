@@ -17,18 +17,13 @@
     width: 0px;
     border: 1px solid $border;
     position: relative;
-    div.debug-info {
-      display: none;
+    .zoom-level {
       position: absolute;
-      top: 15px;
-      left: -14px;
-      font-size: 8px;
-      right: -23px;
-      p {
-        @include truncate-line();
-        width: 100%;
-        margin: 0;
-      }
+      border: 1px solid $blue;
+      left: -7px;
+      right: -7px;
+      bottom: 0%;
+      @include animate-property(bottom);
     }
   }
 

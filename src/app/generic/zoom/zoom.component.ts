@@ -65,6 +65,10 @@ export class ZoomComponent implements OnChanges {
   get isMaxZoomLevel(): boolean {
     return this.zoomIndex === this.zoomLevels.length - 1;
   }
+  
+  get zoomLevelPercentage(): number {
+    return (this.zoomIndex / (this.zoomLevels.length - 1)) * 100;
+  }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['zoom'] && changes['zoom'].currentValue) {

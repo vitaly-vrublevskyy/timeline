@@ -2,11 +2,8 @@
   <i (click)="zoomIn()"
      [class.disabled]="isMaxZoomLevel"
      class="action material-icons">add_circle</i>
-  <div class="v-scroll-bar">
-    <div class="debug-info">
-      <p>{{ zoomLevel.displayValue }}</p>
-      <p>{{ zoomLevel.value }}</p>
-    </div>
+  <div [attr.title]="zoomLevel.displayValue" class="v-scroll-bar">
+    <div [style.bottom.%]="zoomLevelPercentage" class="zoom-level"></div>
   </div>
   <i (click)="zoomOut()"
      [class.disabled]="isMinZoomLevel"
