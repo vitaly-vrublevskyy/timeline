@@ -1,5 +1,6 @@
-@import "../../../mixin";
-$border: rgb(217, 227, 239);
+@import "../../../styles/mixin";
+@import "../../../styles/var";
+
 
 .timeline-player-container {
   display: flex;

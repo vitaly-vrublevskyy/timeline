@@ -567,7 +567,7 @@ export class TimelineComponent implements OnInit {
 
   }
 
-  private fitAllEvents(): void {
+  public fitAllEvents(): void {
     if (this.data.events.length < 2) {
       if (this.eventGroups.length > 0) {
         // only 1 event make sure its visible

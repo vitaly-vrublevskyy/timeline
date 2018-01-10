@@ -1,6 +1,7 @@
-@import "../../../mixin";
+@import "../../../styles/mixin";
+@import "../../../styles/var";
 
-$border: rgb(217, 227, 239);
+
 
 .zoom-container {
   display: flex;
