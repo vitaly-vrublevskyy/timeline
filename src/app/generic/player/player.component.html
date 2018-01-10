@@ -19,7 +19,7 @@
     </div>
   </div>
 
-  <div [class.disabled]="this.needleIndex === this.events.length - 1"
+  <div [class.disabled]="isLastPoint"
        (click)="goToNext()"
        class="vbutton action">
     <i class="material-icons">skip_next</i>

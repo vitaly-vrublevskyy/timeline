@@ -1,8 +1,8 @@
 import {Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
-import * as d3 from 'd3';
 import {TimelineEventGroup, TimelineEventVM} from '../../model/view-models';
 import {TimerObservable} from 'rxjs/observable/TimerObservable';
 import {Subscription} from 'rxjs/Subscription';
+import * as _ from 'lodash';
 
 @Component({
   selector: 'app-player',
@@ -16,11 +16,17 @@ export class PlayerComponent implements OnDestroy {
   events: TimelineEventGroup[];
 
   /*
-  * Change player cursor
+  * Change player cursor (needle)
   * */
   @Output()
   change: EventEmitter<number> = new EventEmitter<number>();
   
+  @Output()
+  endPlaying: EventEmitter<void> = new EventEmitter();
+  
+  /*
+  * Select Event using prev or next buttons
+  * */
   @Output()
   select: EventEmitter<number> = new EventEmitter<number>();
 
@@ -42,6 +48,16 @@ export class PlayerComponent implements OnDestroy {
     return this.speedMultipliersList[this.speedIndex];
   }
 
+  
+  get selectedItemIndex (): number {
+    return _.findIndex(this.events, {selected: true});
+  }
+  
+  
+  get isLastPoint(): boolean {
+    return this.needleIndex === this.events.length - 1;
+  }
+  
   /**
    * Player related properties
    * */
@@ -67,20 +83,25 @@ export class PlayerComponent implements OnDestroy {
   }
 
   startPlayer(speed: number = 1) {
-    if (speed < 0) {
-      speed = Math.abs(1 / speed);
-    }
     if (this.playbackSubscription) {
       this.playbackSubscription.unsubscribe();
     }
-    const period = 1000 / speed;
-    // TODO: detect start point
-    const times: number = this.events.length + 1;
-    this.playbackSubscription = TimerObservable.create(0, period)
-      .take(times)
-      .subscribe(index => this.handlePlayback(index, times));
-  }
 
+    const offset: number = (this.selectedItemIndex !== -1) ? this.selectedItemIndex : 0;
+    const times: number = (this.events.length - offset) + 1;
+    const delay: number = this.convertSpeedIntoMilliseconds(speed);
+    this.playbackSubscription = TimerObservable.create(0, delay)
+      .take(times)
+      .subscribe(index => this.handlePlayback(index + offset, times));
+  }
+  
+  private convertSpeedIntoMilliseconds(speed: number): number {
+    if (speed < 0) {
+      speed = Math.abs(1 / speed);
+    }
+    return 1000 / speed;
+  }
+  
   /*
   * Needle Position
   * */
@@ -117,15 +138,15 @@ export class PlayerComponent implements OnDestroy {
   /*
   * Playback
   * */
-  private handlePlayback(index: number, times: number) {
-    const isLastPoint: boolean = index === times - 1;
-    if (isLastPoint) {
+  private handlePlayback(nextNeedleIndex: number, times: number) {
+    if (this.isLastPoint) {
       this.isPlaying = false;
       this.needleIndex = -1;
+      this.endPlaying.emit();
     } else {
-      this.needleIndex = index;
+      this.needleIndex = nextNeedleIndex;
     }
-    this.change.emit(index);
+    this.change.emit(nextNeedleIndex);
   }
 
 }

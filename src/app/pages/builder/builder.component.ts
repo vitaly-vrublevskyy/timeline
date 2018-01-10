@@ -46,12 +46,12 @@ export class BuilderComponent implements OnInit {
         id: _.uniqueId(),
         name: 'Dynamically added first event',
         color: 'red',
-        dateTime: new Date('2016-06-05T00:00:00.000Z')
+        dateTime: new Date('2016-12-05T00:00:00.000Z')
       }, {
         id: _.uniqueId(),
         name: 'Dynamically second event',
         color: 'red',
-        dateTime: new Date('2016-06-06T00:00:00.000Z')
+        dateTime: new Date('2016-11-06T00:00:00.000Z')
       }
     ];
     this.timeline.addEvents(items);

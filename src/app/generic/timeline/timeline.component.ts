@@ -15,10 +15,6 @@ const MIN_ZOOM = 0.0001;
 
 const MAX_ZOOM = 10000000;
 
-const MIN_ZOOM_LEVEL = 1;
-
-const MAX_ZOOM_LEVEL = 604800;
-
 const ZOOM_LEVELS = [1, 10, 15, 60, 300, 900, 1800, 3600, 14400, 43200, 86400, 604800, 604800 * 4, 31556926];
 
 @Component({
@@ -111,8 +107,9 @@ export class TimelineComponent implements OnInit {
     this.buildTimeline();
 
     this.invalidateProperties();
-
-    setTimeout(this.fitAllEvents.bind(this), 5000);
+  
+    this.fitAllEvents();
+    // setTimeout(this.fitAllEvents.bind(this), 5000);
   }
 
   /*

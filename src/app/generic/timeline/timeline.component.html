@@ -1,13 +1,14 @@
 <div class="zoom-level-debug-info">
   <i class="material-icons">zoom_in</i>
-  Time Scale Level: {{ zoomLevelSelector.zoomLevel.displayValu }}
+  Time Scale Level: {{ zoomLevelSelector.zoomLevel.displayValue }}
 </div>
 
 <div class="timeline-component">
   <app-player
     [events]="eventGroups"
     (change)="onHighlightPlayingEvent($event)"
-    (select)="onSelectEventByIndex($event)">
+    (select)="onSelectEventByIndex($event)"
+    (endPlaying)="fitAllEvents()">
   </app-player>
 
   <div class="d3-timeline" #container>
