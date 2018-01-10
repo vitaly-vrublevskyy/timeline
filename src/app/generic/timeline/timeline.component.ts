@@ -24,36 +24,35 @@ const ZOOM_LEVELS = [1, 10, 15, 60, 300, 900, 1800, 3600, 14400, 43200, 86400, 6
   encapsulation: ViewEncapsulation.None
 })
 export class TimelineComponent implements OnInit {
+  /**Current time Scale Level in seconds.*/
+  zoomLevel: number;
+  
+  /* data collection grouped by scale range */
+  eventGroups: TimelineEventGroup[];
   /**
    * Inputs
    * */
   @Input() public data: TimelineDataVM;
 
-  /* data collection grouped by scale range */
-  eventGroups: TimelineEventGroup[];
+
   /**
    * Outputs
    * */
   @Output()
   select: EventEmitter<string[]> = new EventEmitter();
+  
   @Output()
   unselect: EventEmitter<string[]> = new EventEmitter();
+  
   @Output()
   hoverIn: EventEmitter<string[]> = new EventEmitter();
 
   @Output()
   hoverOut: EventEmitter<string[]> = new EventEmitter();
 
-  /**
-   *  Current time Scale Level in seconds.
-   *  According to requirements: default scale of 10 seconds
-   **/
-  zoomLevel: number;
   /*
   * Access to View Template
   * */
-  /* Notify about Click / Unclick  multiple events ids*/
-  @Input() private selection: TimelineEventVM[];
   @ViewChild(PlayerComponent) private player: PlayerComponent;
   @ViewChild('container') private chartContainer: ElementRef;
   @ViewChild('svg') private svgElement: ElementRef;

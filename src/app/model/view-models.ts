@@ -1,9 +1,11 @@
 export interface TimelineDataVM {
   timeConfig: TimeConfigVM;
   events: TimelineEventVM[];
+  // @Redundunt
   timeZone: string; // moment.Timezone
 }
 
+// @Redundunt
 export interface TimeConfigVM {
   id: string;
   start: Date;
