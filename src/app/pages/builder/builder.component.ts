@@ -60,7 +60,7 @@ export class BuilderComponent implements OnInit {
   onRemoveOddEvent() {
     const ids: string[] = this.timelineData.events
       .map(item => item.id)
-      .filter((item, index: number) => index % 2 === 0);
+      .filter((item, index: number) => index % 2 === 1);
 
     this.timeline.removeEvents(ids);
   }

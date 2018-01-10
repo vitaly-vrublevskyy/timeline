@@ -102,14 +102,11 @@ export class TimelineComponent implements OnInit {
   * Ng Hooks
   * */
   ngOnInit() {
-    // this.zoomLevel = 604800;
-
     this.buildTimeline();
 
     this.invalidateProperties();
 
     this.fitAllEvents();
-    // setTimeout(this.fitAllEvents.bind(this), 5000);
   }
 
   /*
