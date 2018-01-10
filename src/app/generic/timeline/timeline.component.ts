@@ -669,18 +669,26 @@ export class TimelineComponent implements OnInit {
   private updateBrushSelection(dateRange: Date[]) {
     const [start, end] = dateRange.map(a => a.getTime());
 
-    // Select items in range
-    this.eventGroups.forEach((item: TimelineEventGroup) => {
-      const isSelected: boolean = (item.dateTime.getTime() >= start && item.dateTime.getTime() <= end);
-      item.selected = isSelected;
-      item.selected
-        ? this.select.emit(item.ids)
-        : this.unselect.emit(item.ids);
-    });
+    // single notification to unselect previous selected events
+    this.unselect.emit(this.getSelectedEventsListIds());
+    // Select items in that time range
+    this.eventGroups.forEach((item: TimelineEventGroup) =>
+      item.selected = (item.dateTime.getTime() >= start && item.dateTime.getTime() <= end)
+    );
+    // single notification to select just selected events
+    this.select.emit(this.getSelectedEventsListIds());
 
     this.invalidateDisplayList();
   }
-
+  
+  private getSelectedEventsListIds(): string[] {
+    return this.eventGroups.reduce((list: string[], item: TimelineEventGroup) =>
+      list.concat(item.selected ? item.ids : [])
+    ,
+      []
+    );
+  }
+  
   private unionFindAlg(events: TimelineEventVM[]): TimelineEventGroup[] {
     const GROUPING_THRESHOLD = 20; // pixel, less than this goes to 1 group
 
