@@ -1,6 +1,6 @@
 import {Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
 import * as d3 from 'd3';
-import {TimelineEventGroup, TimelineEventVM} from "../../model/view-models";
+import {TimelineEventGroup, TimelineEventVM} from '../../model/view-models';
 import {TimerObservable} from 'rxjs/observable/TimerObservable';
 import {Subscription} from 'rxjs/Subscription';
 

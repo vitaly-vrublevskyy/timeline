@@ -253,7 +253,7 @@ export class TimelineComponent implements OnInit {
       .attr('width', 3)
       .attr('height', 90)
       .attr('fill', '#fcfcff')
-      .attr('x', -2 + this.width / 2)
+      .attr('x', -2 + this.width / 2);
     this.PROGRESS_CIRCLE_ARC = d3.arc()
       .innerRadius(5)
       .outerRadius(20);
@@ -281,9 +281,9 @@ export class TimelineComponent implements OnInit {
             return this.PROGRESS_CIRCLE_ARC(d);
           };
         };
-      }
+      };
 
-      this.progressCircle.datum({endAngle: 0, startAngle: 0})
+      this.progressCircle.datum({endAngle: 0, startAngle: 0});
 
       this.progressCircle.transition()
         .duration(250)
