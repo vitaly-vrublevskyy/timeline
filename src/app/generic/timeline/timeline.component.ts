@@ -107,7 +107,7 @@ export class TimelineComponent implements OnInit {
     this.buildTimeline();
 
     this.invalidateProperties();
-  
+
     this.fitAllEvents();
     // setTimeout(this.fitAllEvents.bind(this), 5000);
   }
@@ -123,7 +123,6 @@ export class TimelineComponent implements OnInit {
 
     this.invalidateProperties();
     this.fitAllEvents();
-    // TODO: Calculate (and change if required) best scale for given events on timeline
   }
 
   removeEvents(ids: string[]) {
@@ -231,6 +230,35 @@ export class TimelineComponent implements OnInit {
     // this.zoom.scaleTo(this.svg, k);
     this.svg.transition().duration(750)
       .call(this.zoom.scaleTo, k);
+
+  }
+
+  public fitAllEvents(): void {
+    if (this.data.events.length < 2) {
+      if (this.eventGroups.length > 0) {
+        // only 1 event make sure its visible
+        this.centerEvent(this.eventGroups[0]);
+      }
+      return;
+    }
+
+    // first reset zoom to 0,0,1
+    this.svg.call(this.zoom.transform, d3.zoomIdentity);
+
+    const min = d3.min(this.data.events, (e: TimelineEventGroup) => e.dateTime);
+    const max = d3.max(this.data.events, (e: TimelineEventGroup) => e.dateTime);
+
+    const rangeDuration = max.getTime() - min.getTime();
+    const paddingDuration = Math.floor(rangeDuration / 10);
+
+    const newMin = new Date(min.getTime() - paddingDuration);
+    const newMax = new Date(max.getTime() + paddingDuration);
+
+    this.xScale.domain([newMin, newMax]);
+    this.xAxisGroup
+      .call(this.xAxis.scale(this.xScale));
+
+    this.invalidateDisplayList();
 
   }
 
@@ -565,33 +593,6 @@ export class TimelineComponent implements OnInit {
         return this.getBackgroundColorForEvent(d);
       });
 
-  }
-
-  public fitAllEvents(): void {
-    if (this.data.events.length < 2) {
-      if (this.eventGroups.length > 0) {
-        // only 1 event make sure its visible
-        this.centerEvent(this.eventGroups[0]);
-      }
-      return;
-    }
-
-    // first reset zoom to 0,0,1
-    this.svg.call(this.zoom.transform, d3.zoomIdentity);
-
-    const min = d3.min(this.data.events, (e: TimelineEventGroup) => e.dateTime);
-    const max = d3.max(this.data.events, (e: TimelineEventGroup) => e.dateTime);
-
-    const rangeDuration = max.getTime() - min.getTime();
-    const paddingDuration = Math.floor(rangeDuration / 10);
-
-    const newMin = new Date(min.getTime() - paddingDuration);
-    const newMax = new Date(max.getTime() + paddingDuration);
-
-    this.xScale.domain([newMin, newMax]);
-    this.invalidateDisplayList();
-
-    const message = this.calculateCurrentZoomLevel();
   }
 
   private getBackgroundColorForEvent(item: TimelineEventGroup): string {
