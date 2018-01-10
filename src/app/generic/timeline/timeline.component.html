@@ -1,6 +1,6 @@
 <div class="zoom-level-debug-info">
   <i class="material-icons">zoom_in</i>
-  Time Scale Level: {{ zoomLevel }} s.
+  Time Scale Level: {{ zoomLevelSelector.zoomLevel.displayValue}}
 </div>
 
 <div class="timeline-component">
@@ -15,7 +15,7 @@
     </svg>
   </div>
 
-  <app-zoom
+  <app-zoom #zoomLevelSelector
     [(zoom)]="zoomLevel"
     (zoomChange)="onZoomChanged($event)"
     class="zoom"></app-zoom>

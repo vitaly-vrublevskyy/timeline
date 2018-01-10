@@ -11,15 +11,15 @@ import * as moment from 'moment';
 
 const format = d3.timeFormat('%d %b %Y %H:%M:%S');
 
-const MIN_ZOOM = 0.1;
+const MIN_ZOOM = 0.0001;
 
-const MAX_ZOOM = 1000;
+const MAX_ZOOM = 10000000;
 
 const MIN_ZOOM_LEVEL = 1;
 
 const MAX_ZOOM_LEVEL = 604800;
 
-const ZOOM_LEVELS = [1, 10, 15, 60, 300, 900, 1800, 3600, 14400, 43200, 86400, 604800];
+const ZOOM_LEVELS = [1, 10, 15, 60, 300, 900, 1800, 3600, 14400, 43200, 86400, 604800, 604800 * 4, 31556926];
 
 @Component({
   selector: 'app-timeline',
@@ -89,9 +89,10 @@ export class TimelineComponent implements OnInit {
   private radiusScale = d3.scaleThreshold()
     .domain([2, 6, 11])
     .range([5, 10, 15, 20]);
-  private zoomConversionScale = d3.scaleLinear()
-    .domain([MIN_ZOOM, MAX_ZOOM])
+  private zoomConversionScale = d3.scaleQuantile()
+    .domain(ZOOM_LEVELS)
     .range(ZOOM_LEVELS);
+
   private margin: any = {top: 0, bottom: 0, left: 0, right: 0};
   private brushHandleLabels: any;
   private brushDurationLabel: any;
@@ -105,7 +106,7 @@ export class TimelineComponent implements OnInit {
   * Ng Hooks
   * */
   ngOnInit() {
-    this.zoomLevel = 10;
+    // this.zoomLevel = 604800;
 
     this.buildTimeline();
 
@@ -131,7 +132,7 @@ export class TimelineComponent implements OnInit {
   removeEvents(ids: string[]) {
     this.data.events = this.data.events.filter(item => !ids.includes(item.id));
     this.invalidateProperties();
-    // TODO: Calculate (and change if required) best scale for given events on timeline
+    this.fitAllEvents();
   }
 
   selectEvent(ids: string[]) {
@@ -191,7 +192,41 @@ export class TimelineComponent implements OnInit {
   }
 
   onZoomChanged(zoomLvl: number) {
-    this.zoomProgramatic(this.zoomConversionScale(this.zoomLevel));
+    const newZoomScale = this.convertZoomLevelToK(zoomLvl);
+    this.zoomProgramatic(newZoomScale);
+  }
+
+  convertZoomLevelToK(zoomlevel: number): number {
+    const magicNumber = 8.5;
+    const prefferedNumTicks = Math.floor(this.width / 55);
+
+    const i0 = this.rescaledX().invert(0).getTime();
+    const i1 = this.rescaledX().invert(this.width).getTime();
+    const delta = (i1 - i0) / 1000; // seconds
+
+    // somewhat stable during zooming
+    const k = this.zoomTransform && this.zoomTransform.k || 1;
+    const zoomDeltaKoef = (delta / prefferedNumTicks) * k;
+
+    const newDelta = zoomlevel * magicNumber;
+
+
+    const newK = zoomDeltaKoef / (newDelta / prefferedNumTicks);
+
+    return newK;
+  }
+
+  calculateCurrentZoomLevel(): number {
+    const magicNumber = 8.5;
+
+    const i0 = this.rescaledX().invert(0).getTime();
+    const i1 = this.rescaledX().invert(this.width).getTime();
+
+    const delta = (i1 - i0) / 1000; // seconds
+
+    const zoomLevel = delta / magicNumber;
+    // rounding
+    return this.zoomConversionScale(zoomLevel);
   }
 
   zoomProgramatic(k: number) {
@@ -199,6 +234,7 @@ export class TimelineComponent implements OnInit {
     // this.zoom.scaleTo(this.svg, k);
     this.svg.transition().duration(750)
       .call(this.zoom.scaleTo, k);
+
   }
 
   /**
@@ -358,6 +394,8 @@ export class TimelineComponent implements OnInit {
             .call(this.brush.move, this.lastSelection.map(rescaled));
         }
 
+        this.zoomLevel = this.calculateCurrentZoomLevel();
+
         this.invalidateProperties();
       });
 
@@ -416,6 +454,7 @@ export class TimelineComponent implements OnInit {
         if (!d3.event.selection) {
           // TODO: send notification
           this.brushHandleLabels.attr('display', 'none');
+          this.brushDurationLabel.attr('display', 'none');
           this.clearSelection();
           return;
         }// Ignore empty selections.
@@ -526,29 +565,36 @@ export class TimelineComponent implements OnInit {
         return this.radiusScale(d.groupedEvents.length) + (d.hovered ? 5 : 0);
       })
       .style('fill', (d: TimelineEventGroup) => {
-        return this.getBackgroundColorForEvent(d)
+        return this.getBackgroundColorForEvent(d);
       });
 
   }
 
   private fitAllEvents(): void {
+    if (this.data.events.length < 2) {
+      if (this.eventGroups.length > 0) {
+        // only 1 event make sure its visible
+        this.centerEvent(this.eventGroups[0]);
+      }
+      return;
+    }
+
     // first reset zoom to 0,0,1
     this.svg.call(this.zoom.transform, d3.zoomIdentity);
 
-    const min = d3.min(this.eventGroups, (e: TimelineEventGroup) => e.dateTime);
-    const max = d3.max(this.eventGroups, (e: TimelineEventGroup) => e.dateTime);
+    const min = d3.min(this.data.events, (e: TimelineEventGroup) => e.dateTime);
+    const max = d3.max(this.data.events, (e: TimelineEventGroup) => e.dateTime);
 
     const rangeDuration = max.getTime() - min.getTime();
     const paddingDuration = Math.floor(rangeDuration / 10);
 
-
     const newMin = new Date(min.getTime() - paddingDuration);
     const newMax = new Date(max.getTime() + paddingDuration);
-    this.xScale.domain([newMin, newMax]);
-    this.xAxisGroup
-      .call(this.xAxis.scale(this.xScale));
 
+    this.xScale.domain([newMin, newMax]);
     this.invalidateDisplayList();
+
+    const message = this.calculateCurrentZoomLevel();
   }
 
   private getBackgroundColorForEvent(item: TimelineEventGroup): string {
