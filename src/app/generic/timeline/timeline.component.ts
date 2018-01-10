@@ -724,14 +724,15 @@ export class TimelineComponent implements OnInit {
   }
 
   private animatePlayingCircle(group: TimelineEventGroup) {
+    const period: number = this.player.convertSpeedIntoMilliseconds(this.player.speed);
     setTimeout(() => {
       const radius = this.radiusScale(group.groupedEvents.length) + (group.hovered ? 5 : 0);
       this.progressCircle
         .attr('opacity', .5)
-        .attr('transform', `translate(${this.width / 2}, 61) scale(${ (radius + 5) / 20})`)
+        .attr('transform', `translate(${this.width / 2}, 61) scale(${ (radius + 5) / 20})`);
       setTimeout(() => {
         this.progressCircle.attr('opacity', 0);
-      }, 500);
-    }, 500);
+      }, period / 2);
+    }, period / 2);
   }
 }

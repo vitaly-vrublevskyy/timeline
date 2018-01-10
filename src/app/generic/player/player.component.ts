@@ -95,7 +95,7 @@ export class PlayerComponent implements OnDestroy {
       .subscribe(index => this.handlePlayback(index + offset, times));
   }
   
-  private convertSpeedIntoMilliseconds(speed: number): number {
+  convertSpeedIntoMilliseconds(speed: number): number {
     if (speed < 0) {
       speed = Math.abs(1 / speed);
     }
