@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
-import { TimelineDataVM } from '../../../model/view-models';
+import { TimelineDataVM } from '../../../tn-timeline/model/view-models';
 import * as _ from 'lodash';
 
 @Injectable()

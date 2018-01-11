@@ -16,6 +16,7 @@ import {BuilderModule} from './pages/builder/builder.module';
     BrowserAnimationsModule,
     AppRoutingModule,
     /*Pages*/
+    
     BuilderModule
   ],
   providers: [],

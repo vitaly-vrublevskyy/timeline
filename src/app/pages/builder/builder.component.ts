@@ -1,8 +1,8 @@
 import { Component, ElementRef, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { TimelineService } from './service/timeline.service';
-import { TimelineDataVM, TimelineEventVM } from '../../model/view-models';
+import { TimelineDataVM, TimelineEventVM } from '../../tn-timeline/model/view-models';
 import * as _ from 'lodash';
-import { TimelineComponent } from '../../generic/timeline/timeline.component';
+import {TnTimelineComponent} from "../../tn-timeline/tn-timeline/tn-timeline.component";
 
 @Component({
   selector: 'app-builder',
@@ -25,7 +25,7 @@ export class BuilderComponent implements OnInit {
   /*
   * Timeline component reference
   * */
-  @ViewChild(TimelineComponent) private timeline: TimelineComponent;
+  @ViewChild(TnTimelineComponent) private timeline: TnTimelineComponent;
   @ViewChild('scrollContent') private scrollContainer: ElementRef;
 
 

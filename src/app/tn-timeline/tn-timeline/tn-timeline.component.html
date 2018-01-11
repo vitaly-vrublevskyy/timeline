@@ -1,0 +1,22 @@
+<div class="zoom-level-debug-info">
+  <i class="material-icons">zoom_in</i>
+  Time Scale Level: {{ zoomControl.zoomLevel?.displayValue }}
+</div>
+
+<div class="timeline-component">
+  <tn-timepline-player
+    [events]="eventGroups"
+    (change)="onHighlightPlayingEvent($event)"
+    (select)="onSelectEventByIndex($event)"
+    (endPlaying)="fitAllEvents()">
+  </tn-timepline-player>
+
+  <div class="d3-timeline" #container>
+    <svg #svg></svg>
+  </div>
+
+  <tn-timeline-zoom #zoomControl
+    [(zoom)]="zoomLevel"
+    (zoomChange)="onZoomChanged($event)"
+    class="zoom"></tn-timeline-zoom>
+</div>

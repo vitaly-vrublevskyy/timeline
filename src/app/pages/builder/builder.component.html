@@ -24,12 +24,12 @@
   </div>
 
   <!-- Timeline Component -->
-  <app-timeline
+  <tn-timeline-component
     [data]="timelineData"
     (select)="onSelectEvent($event)"
     (unselect)="onUnSelectEvent($event)"
     (hoverIn)="onHoverInEvent($event)"
     (hoverOut)="onHoverOutEvent($event)"
     class="timeline">
-  </app-timeline>
+  </tn-timeline-component>
 </div>

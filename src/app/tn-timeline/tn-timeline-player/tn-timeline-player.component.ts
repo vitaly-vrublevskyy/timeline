@@ -1,16 +1,16 @@
 import {Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
-import {TimelineEventGroup, TimelineEventVM} from '../../model/view-models';
+import {TimelineEventGroup, TimelineEventVM} from '../model/view-models';
 import {TimerObservable} from 'rxjs/observable/TimerObservable';
 import {Subscription} from 'rxjs/Subscription';
 import * as _ from 'lodash';
 
 @Component({
-  selector: 'app-player',
-  templateUrl: './player.component.html',
-  styleUrls: ['./player.component.scss'],
+  selector: 'tn-timepline-player',
+  templateUrl: './tn-timeline-player.component.html',
+  styleUrls: ['./tn-timeline-player.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class PlayerComponent implements OnDestroy {
+export class TnTimelinePlayerComponent implements OnDestroy {
 
   @Input()
   events: TimelineEventGroup[];

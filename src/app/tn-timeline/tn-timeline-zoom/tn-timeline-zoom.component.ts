@@ -7,12 +7,12 @@ interface Option {
 }
 
 @Component({
-  selector: 'app-zoom',
-  templateUrl: './zoom.component.html',
-  styleUrls: ['./zoom.component.scss'],
+  selector: 'tn-timeline-zoom',
+  templateUrl: './tn-timeline-zoom.component.html',
+  styleUrls: ['./tn-timeline-zoom.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class ZoomComponent implements OnChanges {
+export class TnTimelineZoomComponent implements OnChanges {
 
   /**
    *  Zoom level in seconds
