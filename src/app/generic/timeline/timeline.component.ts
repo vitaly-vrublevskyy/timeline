@@ -26,7 +26,7 @@ const ZOOM_LEVELS = [1, 10, 15, 60, 300, 900, 1800, 3600, 14400, 43200, 86400, 6
 export class TimelineComponent implements OnInit {
   /**Current time Scale Level in seconds.*/
   zoomLevel: number;
-  
+
   /* data collection grouped by scale range */
   eventGroups: TimelineEventGroup[];
   /**
@@ -35,15 +35,16 @@ export class TimelineComponent implements OnInit {
   @Input() public data: TimelineDataVM;
 
 
+
   /**
    * Outputs
    * */
   @Output()
   select: EventEmitter<string[]> = new EventEmitter();
-  
+
   @Output()
   unselect: EventEmitter<string[]> = new EventEmitter();
-  
+
   @Output()
   hoverIn: EventEmitter<string[]> = new EventEmitter();
 
@@ -93,6 +94,37 @@ export class TimelineComponent implements OnInit {
   private brushDurationLabel: any;
   private progressCircle: any;
   private PROGRESS_CIRCLE_ARC: any;
+
+  formatMillisecond = d3.timeFormat('%S.%L');
+  formatSecond = d3.timeFormat('%S');
+  formatMinute = d3.timeFormat('%H:%M:%S');
+  formatHour = d3.timeFormat('%H:%M');
+  formatDay = d3.timeFormat('%a %d');
+  formatWeek = d3.timeFormat('%b %d');
+  formatMonth = d3.timeFormat('%B');
+  formatYear = d3.timeFormat('%Y');
+
+
+  multiFormat = (date) => {
+    const formats = [
+      this.formatMillisecond(date),
+      this.formatSecond(date),
+      this.formatMinute(date),
+      this.formatMinute(date),
+      this.formatMinute(date),
+      this.formatHour(date),
+      this.formatHour(date),
+      this.formatHour(date),
+      this.formatHour(date),
+      this.formatHour(date),
+      this.formatDay(date),
+      this.formatWeek(date),
+      this.formatMonth(date),
+      this.formatYear(date)
+    ];
+
+    return formats[ZOOM_LEVELS.indexOf(this.zoomLevel)];
+  }
 
   constructor() {
   }
@@ -415,7 +447,7 @@ export class TimelineComponent implements OnInit {
         }
 
         this.zoomLevel = this.calculateCurrentZoomLevel();
-
+        this.updateAxis();
         this.invalidateProperties();
       });
 
@@ -523,7 +555,9 @@ export class TimelineComponent implements OnInit {
       .range([0, this.width]);
     // .clamp(true);
 
-    this.xAxis = d3.axisBottom(this.xScale);
+
+    this.xAxis = d3.axisBottom(this.xScale)
+      .tickFormat(this.multiFormat);
     this.xAxisGroup = this.timeline.append('g')
       .attr('class', 'axis axis-x')
       .attr('transform', `translate(0,  46)`)
@@ -680,7 +714,7 @@ export class TimelineComponent implements OnInit {
 
     this.invalidateDisplayList();
   }
-  
+
   private getSelectedEventsListIds(): string[] {
     return this.eventGroups.reduce((list: string[], item: TimelineEventGroup) =>
       list.concat(item.selected ? item.ids : [])
@@ -688,7 +722,7 @@ export class TimelineComponent implements OnInit {
       []
     );
   }
-  
+
   private unionFindAlg(events: TimelineEventVM[]): TimelineEventGroup[] {
     const GROUPING_THRESHOLD = 20; // pixel, less than this goes to 1 group
 
@@ -738,5 +772,26 @@ export class TimelineComponent implements OnInit {
         this.progressCircle.attr('opacity', 0);
       }, period / 2);
     }, period / 2);
+  }
+
+  private updateAxis() {
+    this.xAxis.ticks(
+      [
+        d3.timeSecond.every(1),
+        d3.timeSecond.every(10),
+        d3.timeSecond.every(15),
+        d3.timeSecond.every(60),
+        d3.timeMinute.every(5),
+        d3.timeMinute.every(15),
+        d3.timeMinute.every(30),
+        d3.timeHour.every(1),
+        d3.timeHour.every(4),
+        d3.timeHour.every(12),
+        d3.timeHour.every(24),
+        d3.timeWeek.every(1),
+        d3.timeMonth.every(1),
+        d3.timeYear.every(1)
+      ][ZOOM_LEVELS.indexOf(this.zoomLevel)]
+    );
   }
 }
