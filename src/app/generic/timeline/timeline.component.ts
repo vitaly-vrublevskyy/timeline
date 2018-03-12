@@ -2,9 +2,11 @@ import {
   Component,
   ElementRef,
   EventEmitter,
-  Input, OnChanges,
+  Input,
+  OnChanges,
   OnInit,
-  Output, SimpleChanges,
+  Output,
+  SimpleChanges,
   ViewChild,
   ViewEncapsulation
 } from '@angular/core';
@@ -29,33 +31,24 @@ const ZOOM_LEVELS = [1, 10, 15, 60, 300, 900, 1800, 3600, 14400, 43200, 86400, 6
   styleUrls: ['./timeline.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class TimelineComponent implements OnInit,OnChanges {
-  ngOnChanges(changes: SimpleChanges): void {
-
-  }
+export class TimelineComponent implements OnInit, OnChanges {
   /**Current time Scale Level in seconds.*/
   zoomLevel: number;
-
   /* data collection grouped by scale range */
   eventGroups: TimelineEventGroup[];
   /**
    * Inputs
    * */
   @Input() public data: TimelineDataVM;
-
-
   /**
    * Outputs
    * */
   @Output()
   select: EventEmitter<string[]> = new EventEmitter();
-
   @Output()
   unselect: EventEmitter<string[]> = new EventEmitter();
-
   @Output()
   hoverIn: EventEmitter<string[]> = new EventEmitter();
-
   @Output()
   hoverOut: EventEmitter<string[]> = new EventEmitter();
   formatMillisecond = d3.timeFormat('%S.%L');
@@ -131,6 +124,18 @@ export class TimelineComponent implements OnInit,OnChanges {
   private PROGRESS_CIRCLE_ARC: any;
 
   constructor() {
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    const change = changes['data'];
+    if (change && change.currentValue) {
+      setTimeout(
+        () => {
+          this.invalidateProperties();
+          this.fitAllEvents();
+        }, 1000
+      )
+    }
   }
 
   /*
@@ -271,8 +276,9 @@ export class TimelineComponent implements OnInit,OnChanges {
       .transition().duration(10)
       .call(this.zoom.transform, transform1);
 
+    const minRangeDuration = 0.00027 * 31536000000;
     this.xScale.domain([this.eventGroups[0].dateTime.getTime(),
-      this.eventGroups[0].dateTime.getTime() + 0.00027 * 31536000000]);
+      this.eventGroups[0].dateTime.getTime() + minRangeDuration]);
 
     if (this.data.events.length < 2) {
       if (this.eventGroups.length > 0) {
@@ -294,8 +300,9 @@ export class TimelineComponent implements OnInit,OnChanges {
     const min = d3.min(this.data.events, (e: TimelineEventGroup) => e.dateTime);
     const max = d3.max(this.data.events, (e: TimelineEventGroup) => e.dateTime);
 
-    const rangeDuration = max.getTime() - min.getTime();
+    const rangeDuration = Math.max(2 * minRangeDuration, max.getTime() - min.getTime());
     const paddingDuration = Math.floor(rangeDuration / 10);
+
 
     const newMin = new Date(min.getTime() - paddingDuration);
     const newMax = new Date(max.getTime() + paddingDuration);
@@ -307,7 +314,7 @@ export class TimelineComponent implements OnInit,OnChanges {
     setTimeout(() => {
 
       this.centerDate(averageDate);
-    }, 700);
+    }, 2000);
 
   }
 

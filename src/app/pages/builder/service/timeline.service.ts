@@ -26,7 +26,7 @@ export class TimelineService {
       {
         id: _.uniqueId(),
         name: 'event 2',
-        dateTime: new Date('2001-01-02T00:00:00.012Z'),
+        dateTime: new Date('2000-01-01T01:00:00.012Z'),
         color: '#5093E1'
       },
 
@@ -82,14 +82,14 @@ export class TimelineService {
       {
         id: _.uniqueId(),
         name: 'event 01',
-        dateTime: new Date('1970-01-01T00:00:00.000Z'),
+        dateTime: new Date('2010-01-01T00:00:00.000Z'),
         color: '#5093E1'
       },
 
       {
         id: _.uniqueId(),
         name: 'event 012',
-        dateTime: new Date('1970-01-01T00:00:00.012Z'),
+        dateTime: new Date('2020-01-01T00:00:00.012Z'),
         color: '#5093E1'
       },
 
