@@ -1,5 +1,11 @@
 import {
-  Component, ElementRef, EventEmitter, Input, OnInit, Output, ViewChild,
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ViewChild,
   ViewEncapsulation
 } from '@angular/core';
 import { TimelineDataVM, TimelineEventGroup, TimelineEventVM } from '../../model/view-models';
@@ -11,11 +17,11 @@ import * as moment from 'moment';
 
 const format = d3.timeFormat('%d %b %Y %H:%M:%S');
 
-const MIN_ZOOM = 0.0001;
+const MIN_ZOOM = 0.00000001;
 
 const MAX_ZOOM = 10000000;
 
-const ZOOM_LEVELS = [1, 10, 15, 60, 300, 900, 1800, 3600, 14400, 43200, 86400, 604800, 604800 * 4, 31556926];
+const ZOOM_LEVELS = [1, 10, 15, 60, 300, 900, 1800, 3600, 14400, 43200, 86400, 604800, 604800 * 4, 31556926, 31556926 * 5];
 
 @Component({
   selector: 'app-timeline',
@@ -35,7 +41,6 @@ export class TimelineComponent implements OnInit {
   @Input() public data: TimelineDataVM;
 
 
-
   /**
    * Outputs
    * */
@@ -50,7 +55,35 @@ export class TimelineComponent implements OnInit {
 
   @Output()
   hoverOut: EventEmitter<string[]> = new EventEmitter();
+  formatMillisecond = d3.timeFormat('%S.%L');
+  formatSecond = d3.timeFormat('%S');
+  formatMinute = d3.timeFormat('%H:%M:%S');
+  formatHour = d3.timeFormat('%H:%M');
+  formatDay = d3.timeFormat('%a %d');
+  formatWeek = d3.timeFormat('%b %d');
+  formatMonth = d3.timeFormat('%B');
+  formatYear = d3.timeFormat('%Y');
+  multiFormat = (date) => {
+    const formats = [
+      this.formatMillisecond(date),
+      this.formatSecond(date),
+      this.formatMinute(date),
+      this.formatMinute(date),
+      this.formatMinute(date),
+      this.formatHour(date),
+      this.formatHour(date),
+      this.formatHour(date),
+      this.formatHour(date),
+      this.formatHour(date),
+      this.formatDay(date),
+      this.formatWeek(date),
+      this.formatMonth(date),
+      this.formatYear(date),
+      this.formatYear(date)
+    ];
 
+    return formats[ZOOM_LEVELS.indexOf(this.zoomLevel)];
+  };
   /*
   * Access to View Template
   * */
@@ -88,43 +121,11 @@ export class TimelineComponent implements OnInit {
   private zoomConversionScale = d3.scaleQuantile()
     .domain(ZOOM_LEVELS)
     .range(ZOOM_LEVELS);
-
   private margin: any = {top: 0, bottom: 0, left: 0, right: 0};
   private brushHandleLabels: any;
   private brushDurationLabel: any;
   private progressCircle: any;
   private PROGRESS_CIRCLE_ARC: any;
-
-  formatMillisecond = d3.timeFormat('%S.%L');
-  formatSecond = d3.timeFormat('%S');
-  formatMinute = d3.timeFormat('%H:%M:%S');
-  formatHour = d3.timeFormat('%H:%M');
-  formatDay = d3.timeFormat('%a %d');
-  formatWeek = d3.timeFormat('%b %d');
-  formatMonth = d3.timeFormat('%B');
-  formatYear = d3.timeFormat('%Y');
-
-
-  multiFormat = (date) => {
-    const formats = [
-      this.formatMillisecond(date),
-      this.formatSecond(date),
-      this.formatMinute(date),
-      this.formatMinute(date),
-      this.formatMinute(date),
-      this.formatHour(date),
-      this.formatHour(date),
-      this.formatHour(date),
-      this.formatHour(date),
-      this.formatHour(date),
-      this.formatDay(date),
-      this.formatWeek(date),
-      this.formatMonth(date),
-      this.formatYear(date)
-    ];
-
-    return formats[ZOOM_LEVELS.indexOf(this.zoomLevel)];
-  }
 
   constructor() {
   }
@@ -134,9 +135,7 @@ export class TimelineComponent implements OnInit {
   * */
   ngOnInit() {
     this.buildTimeline();
-
     this.invalidateProperties();
-
     this.fitAllEvents();
   }
 
@@ -222,7 +221,7 @@ export class TimelineComponent implements OnInit {
 
   convertZoomLevelToK(zoomlevel: number): number {
     const magicNumber = 8.5;
-    const prefferedNumTicks = Math.floor(this.width / 55);
+    const prefferedNumTicks = Math.floor(this.width / 100);
 
     const i0 = this.rescaledX().invert(0).getTime();
     const i1 = this.rescaledX().invert(this.width).getTime();
@@ -265,13 +264,17 @@ export class TimelineComponent implements OnInit {
     if (this.data.events.length < 2) {
       if (this.eventGroups.length > 0) {
         // only 1 event make sure its visible
+
+        // 2y = 1x scale
+        const scale = d3.zoomIdentity.scale(1);
+        this.svg.call(this.zoom.transform, scale);
+        this.xScale.domain([this.eventGroups[0].dateTime.getTime() - 31556952, this.eventGroups[0].dateTime.getTime() + 31556952]);
         this.centerEvent(this.eventGroups[0]);
       }
       return;
     }
 
     // first reset zoom to 0,0,1
-    this.svg.call(this.zoom.transform, d3.zoomIdentity);
 
     const min = d3.min(this.data.events, (e: TimelineEventGroup) => e.dateTime);
     const max = d3.max(this.data.events, (e: TimelineEventGroup) => e.dateTime);
@@ -281,12 +284,21 @@ export class TimelineComponent implements OnInit {
 
     const newMin = new Date(min.getTime() - paddingDuration);
     const newMax = new Date(max.getTime() + paddingDuration);
+    // 2y = 1x scale
+    let scaleFactor = 31536000000 / (rangeDuration + 2 * paddingDuration);
+
+    scaleFactor = Math.min(Math.max(scaleFactor, 0.00004), 10000)
+    const scale = d3.zoomIdentity.scale(scaleFactor);
+    this.svg.call(this.zoom.transform, scale);
 
     this.xScale.domain([newMin, newMax]);
+
     this.xAxisGroup
       .call(this.xAxis.scale(this.xScale));
 
-    this.invalidateDisplayList();
+
+    this.centerDate(new Date(newMax.getTime() / 2 + newMin.getTime() / 2));
+    // this.invalidateDisplayList();
 
   }
 
@@ -435,6 +447,7 @@ export class TimelineComponent implements OnInit {
 
         const rescaled = this.rescaledX();
 
+        console.log('g', this.zoomTransform.x, this.zoomTransform.k);
         this.dataGroup
           .attr('transform', `translate(${this.zoomTransform.x}, 0) scale(1,1)`);
 
@@ -451,7 +464,11 @@ export class TimelineComponent implements OnInit {
         this.invalidateProperties();
       });
 
-    this.svg.call(this.zoom);
+    this.svg
+      .call(this.zoom)
+      .on('wheel', function () {
+        d3.event.preventDefault();
+      }); // Disable browser zoom on svg
   }
 
   private buildBrush() {
@@ -551,13 +568,15 @@ export class TimelineComponent implements OnInit {
 
   private addAxisX() {
     this.xScale = d3.scaleTime()
-      .domain([this.data.timeConfig.start, this.data.timeConfig.end])
+    // .domain([this.data.timeConfig.start, this.data.timeConfig.end])
+      .domain([new Date(0), new Date(1e12)])
       .range([0, this.width]);
     // .clamp(true);
 
 
     this.xAxis = d3.axisBottom(this.xScale)
       .tickFormat(this.multiFormat);
+
     this.xAxisGroup = this.timeline.append('g')
       .attr('class', 'axis axis-x')
       .attr('transform', `translate(0,  46)`)
@@ -597,7 +616,9 @@ export class TimelineComponent implements OnInit {
 
     const circleGroupMerge = circleGroupEnter.merge(circles)
       .attr('transform', (d: TimelineEventGroup) => {
-        const scalex = this.zoomTransform ? this.zoomTransform.k : 1;
+        const scalex = this.zoomTransform ? this.zoomTransform.k : 0.001;
+        // console.log('c', scalex * this.xScale(d.dateTime))
+        // console.log('s', scalex )
         return 'translate(' + scalex * this.xScale(d.dateTime) + ',' + 0 + ')';
       });
 
@@ -613,8 +634,6 @@ export class TimelineComponent implements OnInit {
 
     circleGroupMerge.select('circle')
       .attr('r', (d: TimelineEventGroup, i, j) => {
-        // console.log('hover', i, j, d.hovered, d.hash);
-        // console.log(d.hovered === data[i].hovered)
 
         return this.radiusScale(d.groupedEvents.length) + (d.hovered ? 5 : 0);
       })
@@ -717,8 +736,8 @@ export class TimelineComponent implements OnInit {
 
   private getSelectedEventsListIds(): string[] {
     return this.eventGroups.reduce((list: string[], item: TimelineEventGroup) =>
-      list.concat(item.selected ? item.ids : [])
-    ,
+        list.concat(item.selected ? item.ids : [])
+      ,
       []
     );
   }
@@ -752,8 +771,12 @@ export class TimelineComponent implements OnInit {
   }
 
   private centerEvent(groupEvent: TimelineEventGroup) {
+    this.centerDate(groupEvent.dateTime);
+  }
+
+  private centerDate(dateTime: Date) {
     const {x, y, k} = this.zoomTransform || d3.zoomIdentity;
-    const itemCurrentX = this.rescaledX()(groupEvent.dateTime);
+    const itemCurrentX = this.rescaledX()(dateTime);
     const delta = (+this.width / 2 - itemCurrentX) / k;
 
     this.svg
@@ -775,6 +798,7 @@ export class TimelineComponent implements OnInit {
   }
 
   private updateAxis() {
+    console.log('update axis', this.zoomLevel, ZOOM_LEVELS.indexOf(this.zoomLevel))
     this.xAxis.ticks(
       [
         d3.timeSecond.every(1),
@@ -790,7 +814,8 @@ export class TimelineComponent implements OnInit {
         d3.timeHour.every(24),
         d3.timeWeek.every(1),
         d3.timeMonth.every(1),
-        d3.timeYear.every(1)
+        d3.timeYear.every(1),
+        d3.timeYear.every(5)
       ][ZOOM_LEVELS.indexOf(this.zoomLevel)]
     );
   }

@@ -10,59 +10,59 @@ export class TimelineService {
     timeZone: 'UTC',
     timeConfig: {
       id: _.uniqueId(),
-      start: new Date('2016-05-01T00:00:00.000Z'),
+      start: new Date('1980-05-01T00:00:00.000Z'),
       end: new Date('2016-09-04T00:00:00.000Z'),
     },
     events: [
       {
         id: _.uniqueId(),
+        name: 'event 1',
+        dateTime: new Date('1980-06-01T00:00:00.000Z'),
+        color: '#5093E1'
+      },
+      {
+        id: _.uniqueId(),
         name: 'event 2',
-        dateTime: new Date('2016-06-01T00:00:00.000Z'),
+        dateTime: new Date('2017-06-01T00:00:00.012Z'),
         color: '#5093E1'
       },
-      {
-        id: _.uniqueId(),
-        name: 'event 3',
-        dateTime: new Date('2016-06-02T00:00:00.000Z'),
-        color: '#5093E1'
-      },
-      // Three dots in one day
-      {
-        id: _.uniqueId(),
-        name: 'event 4',
-        dateTime: new Date('2016-06-03T01:00:00.000Z'),
-        color: '#98B877'
-      },
-      {
-        id: _.uniqueId(),
-        name: 'event 5',
-        dateTime: new Date('2016-06-03T02:00:00.000Z'),
-        color: '#5093E1'
-      },
-      {
-        id: _.uniqueId(),
-        name: 'event 6',
-        dateTime: new Date('2016-06-03T03:00:00.000Z'),
-        color: '#98B877'
-      },
-      {
-        id: _.uniqueId(),
-        name: 'event 7',
-        dateTime: new Date('2016-06-10T00:00:00.000Z'),
-        color: '#5093E1'
-      },
-      {
-        id: _.uniqueId(),
-        name: 'event 8',
-        dateTime: new Date('2016-06-25T00:00:00.000Z'),
-        color: '#98B877'
-      },
-      {
-        id: _.uniqueId(),
-        name: 'event 9',
-        dateTime: new Date('2016-08-02T00:00:00.000Z'),
-        color: '#5093E1'
-      }
+      // // Three dots in one day
+      // {
+      //   id: _.uniqueId(),
+      //   name: 'event 4',
+      //   dateTime: new Date('2016-06-03T01:00:00.000Z'),
+      //   color: '#98B877'
+      // },
+      // {
+      //   id: _.uniqueId(),
+      //   name: 'event 5',
+      //   dateTime: new Date('2016-06-03T02:00:00.000Z'),
+      //   color: '#5093E1'
+      // },
+      // {
+      //   id: _.uniqueId(),
+      //   name: 'event 6',
+      //   dateTime: new Date('2016-06-03T03:00:00.000Z'),
+      //   color: '#98B877'
+      // },
+      // {
+      //   id: _.uniqueId(),
+      //   name: 'event 7',
+      //   dateTime: new Date('2016-06-10T00:00:00.000Z'),
+      //   color: '#5093E1'
+      // },
+      // {
+      //   id: _.uniqueId(),
+      //   name: 'event 8',
+      //   dateTime: new Date('2016-06-25T00:00:00.000Z'),
+      //   color: '#98B877'
+      // },
+      // {
+      //   id: _.uniqueId(),
+      //   name: 'event 9',
+      //   dateTime: new Date('2016-08-02T00:00:00.000Z'),
+      //   color: '#5093E1'
+      // }
     ]
   };
 
