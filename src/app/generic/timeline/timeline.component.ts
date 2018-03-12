@@ -2,9 +2,9 @@ import {
   Component,
   ElementRef,
   EventEmitter,
-  Input,
+  Input, OnChanges,
   OnInit,
-  Output,
+  Output, SimpleChanges,
   ViewChild,
   ViewEncapsulation
 } from '@angular/core';
@@ -19,7 +19,7 @@ const format = d3.timeFormat('%d %b %Y %H:%M:%S');
 
 const MIN_ZOOM = 0.00000001;
 
-const MAX_ZOOM = 10000000;
+const MAX_ZOOM = 1000000000;
 
 const ZOOM_LEVELS = [1, 10, 15, 60, 300, 900, 1800, 3600, 14400, 43200, 86400, 604800, 604800 * 4, 31556926, 31556926 * 5];
 
@@ -29,7 +29,10 @@ const ZOOM_LEVELS = [1, 10, 15, 60, 300, 900, 1800, 3600, 14400, 43200, 86400, 6
   styleUrls: ['./timeline.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class TimelineComponent implements OnInit {
+export class TimelineComponent implements OnInit,OnChanges {
+  ngOnChanges(changes: SimpleChanges): void {
+
+  }
   /**Current time Scale Level in seconds.*/
   zoomLevel: number;
 
@@ -255,21 +258,33 @@ export class TimelineComponent implements OnInit {
   zoomProgramatic(k: number) {
     const {x, y} = this.zoomTransform || d3.zoomIdentity;
     // this.zoom.scaleTo(this.svg, k);
-    this.svg.transition().duration(750)
+    this.svg
+      .transition().duration(700)
       .call(this.zoom.scaleTo, k);
 
   }
 
   public fitAllEvents(): void {
+    const transform1 = d3.zoomIdentity.scale(1);
+
+    this.svg
+      .transition().duration(10)
+      .call(this.zoom.transform, transform1);
+
+    this.xScale.domain([this.eventGroups[0].dateTime.getTime(),
+      this.eventGroups[0].dateTime.getTime() + 0.00027 * 31536000000]);
+
     if (this.data.events.length < 2) {
       if (this.eventGroups.length > 0) {
-        // only 1 event make sure its visible
+        // zoomlevel for 1 event
 
-        // 2y = 1x scale
-        const scale = d3.zoomIdentity.scale(1);
-        this.svg.call(this.zoom.transform, scale);
-        this.xScale.domain([this.eventGroups[0].dateTime.getTime() - 31556952, this.eventGroups[0].dateTime.getTime() + 31556952]);
-        this.centerEvent(this.eventGroups[0]);
+
+        // only 1 event make sure its visible
+        this.onZoomChanged(3600);
+        setTimeout(() => {
+          this.centerEvent(this.eventGroups[0]);
+        }, 700);
+
       }
       return;
     }
@@ -284,21 +299,15 @@ export class TimelineComponent implements OnInit {
 
     const newMin = new Date(min.getTime() - paddingDuration);
     const newMax = new Date(max.getTime() + paddingDuration);
-    // 2y = 1x scale
-    let scaleFactor = 31536000000 / (rangeDuration + 2 * paddingDuration);
+    // this.centerEvent(this.eventGroups[0]);
+    const averageDate = new Date(newMax.getTime() / 2 + newMin.getTime() / 2);
 
-    scaleFactor = Math.min(Math.max(scaleFactor, 0.00004), 10000)
-    const scale = d3.zoomIdentity.scale(scaleFactor);
-    this.svg.call(this.zoom.transform, scale);
+    this.onZoomChanged(rangeDuration / 1000);
 
-    this.xScale.domain([newMin, newMax]);
+    setTimeout(() => {
 
-    this.xAxisGroup
-      .call(this.xAxis.scale(this.xScale));
-
-
-    this.centerDate(new Date(newMax.getTime() / 2 + newMin.getTime() / 2));
-    // this.invalidateDisplayList();
+      this.centerDate(averageDate);
+    }, 700);
 
   }
 
@@ -436,6 +445,8 @@ export class TimelineComponent implements OnInit {
       .scaleExtent([MIN_ZOOM, MAX_ZOOM])
       // .on('zoom', null)
       // .translateExtent([[-100, 0], [this.width + 90, 0]])
+      .on('end', () => {
+      })
       .on('zoom', () => {
         this.hideNeedle();
         if (d3.event.sourceEvent && d3.event.sourceEvent.type === 'brush') {
@@ -447,7 +458,7 @@ export class TimelineComponent implements OnInit {
 
         const rescaled = this.rescaledX();
 
-        console.log('g', this.zoomTransform.x, this.zoomTransform.k);
+        // console.log('g', this.zoomTransform.k);
         this.dataGroup
           .attr('transform', `translate(${this.zoomTransform.x}, 0) scale(1,1)`);
 
@@ -798,7 +809,7 @@ export class TimelineComponent implements OnInit {
   }
 
   private updateAxis() {
-    console.log('update axis', this.zoomLevel, ZOOM_LEVELS.indexOf(this.zoomLevel))
+    // console.log('update axis', this.zoomLevel, ZOOM_LEVELS.indexOf(this.zoomLevel))
     this.xAxis.ticks(
       [
         d3.timeSecond.every(1),

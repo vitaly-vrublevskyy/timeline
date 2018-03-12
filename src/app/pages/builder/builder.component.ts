@@ -1,6 +1,6 @@
 import { Component, ElementRef, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { TimelineService } from './service/timeline.service';
-import { TimelineDataVM, TimelineEventVM } from '../../model/view-models';
+import { TimelineDataVM } from '../../model/view-models';
 import * as _ from 'lodash';
 import { TimelineComponent } from '../../generic/timeline/timeline.component';
 
@@ -64,11 +64,11 @@ export class BuilderComponent implements OnInit {
 
     this.timeline.removeEvents(ids);
   }
-  
+
   forceSelectEvent() {
     this.timeline.selectEvent(['2', '7', '9']);
   }
-  
+
   forceUnSelectEvenEvent() {
     this.timeline.unselectEvent(['2', '7', '9']);
   }
@@ -79,7 +79,7 @@ export class BuilderComponent implements OnInit {
   onSelectEvent(ids: string[]): void {
     this.logInfo(`Select Event: ${ids}`);
   }
-  
+
   onUnSelectEvent(ids: string[]): void {
     this.logInfo(`UnSelect Event: ${ids}`);
   }
@@ -90,6 +90,14 @@ export class BuilderComponent implements OnInit {
 
   onHoverOutEvent(ids: string[]) {
     this.logInfo(`Hover Out: ${ids.join(', ')}`);
+  }
+
+  datasetclick(option: number) {
+    if (option === 0) {
+      this.timelineData = this.service.data;
+    } else {
+      this.timelineData = this.service.data0;
+    }
   }
 
   private logInfo(message: string) {
@@ -105,5 +113,4 @@ export class BuilderComponent implements OnInit {
       this.scrollContainer.nativeElement.scrollTop = this.scrollContainer.nativeElement.scrollHeight;
     }, 0);
   }
-
 }
