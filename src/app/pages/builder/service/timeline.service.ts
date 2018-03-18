@@ -16,19 +16,33 @@ export class TimelineService {
       end: new Date('2016-09-04T00:00:00.000Z'),
     },
     events: [
+
       {
         id: _.uniqueId(),
         name: 'event 1',
-        dateTime: new Date('2000-01-01T00:00:00.000Z'),
-        color: '#5093E1'
+        dateTime: new Date('1997-01-01T00:00:00.000Z'),
+        color: '#ff0000'
+      },
+      {
+        id: _.uniqueId(),
+        name: 'event 2',
+        dateTime: new Date('1998-01-01T01:00:00.000Z'),
+        color: '#ffff00'
       },
 
       {
         id: _.uniqueId(),
-        name: 'event 2',
-        dateTime: new Date('2000-01-01T01:00:00.012Z'),
+        name: 'event 3',
+        dateTime: new Date('1999-01-01T01:00:00.000Z'),
         color: '#5093E1'
       },
+      // {
+      //   id: _.uniqueId(),
+      //   name: 'event 2',
+      //   dateTime: new Date('2018-01-01T01:00:00.012Z'),
+      //   color: '#5093E1'
+      // },
+
 
 
       // // Three dots in one day
