@@ -8,7 +8,7 @@ export class TimelineService {
 
 
 
-  data = {
+  data0 = {
     timeZone: 'UTC',
     timeConfig: {
       id: _.uniqueId(),
@@ -85,7 +85,7 @@ export class TimelineService {
     ]
   };
 
-  data0 = {
+  data1 = {
     timeZone: 'UTC',
     timeConfig: {
       id: _.uniqueId(),
@@ -148,11 +148,35 @@ export class TimelineService {
     ]
   };
 
+  data2 = {
+    timeZone: 'UTC',
+    timeConfig: {
+      id: _.uniqueId(),
+      start: new Date('1980-05-01T00:00:00.000Z'),
+      end: new Date('2016-09-04T00:00:00.000Z'),
+    },
+    events: [
+      {
+        id: _.uniqueId(),
+        name: 'event 01',
+        dateTime: new Date('2018-04-04T09:09:00.000Z'),
+        color: '#ff4455'
+      },
+
+      {
+        id: _.uniqueId(),
+        name: 'event 012',
+        dateTime: new Date('2018-04-04T12:12:00.000Z'),
+        color: '#5093E1'
+      },
+    ]
+  };
+
   constructor() {
   }
 
 
   dataSource(): Observable<TimelineDataVM> {
-    return Observable.of(this.data);
+    return Observable.of(this.data0);
   }
 }

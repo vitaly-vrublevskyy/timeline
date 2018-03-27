@@ -93,11 +93,7 @@ export class BuilderComponent implements OnInit {
   }
 
   datasetclick(option: number) {
-    if (option === 0) {
-      this.timelineData = this.service.data;
-    } else {
-      this.timelineData = this.service.data0;
-    }
+    this.timelineData = this.service['data' + option];
   }
 
   private logInfo(message: string) {

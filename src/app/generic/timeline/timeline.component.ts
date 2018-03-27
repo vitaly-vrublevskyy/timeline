@@ -230,7 +230,7 @@ export class TimelineComponent implements OnInit, OnChanges {
 
   convertZoomLevelToK(zoomlevel: number): number {
     const magicNumber = 8.5;
-    const prefferedNumTicks = Math.floor(this.width / 100);
+    const prefferedNumTicks = Math.floor(this.width / 150);
 
     const i0 = this.rescaledX().invert(0).getTime();
     const i1 = this.rescaledX().invert(this.width).getTime();
@@ -262,7 +262,6 @@ export class TimelineComponent implements OnInit, OnChanges {
   }
 
   zoomProgramatic(k: number) {
-    const {x, y} = this.zoomTransform || d3.zoomIdentity;
     // this.zoom.scaleTo(this.svg, k);
     this.svg
       .transition().duration(700)
@@ -274,12 +273,12 @@ export class TimelineComponent implements OnInit, OnChanges {
     const transform1 = d3.zoomIdentity.scale(1);
 
     this.svg
-      .transition().duration(10)
+      // .transition().duration(10)
       .call(this.zoom.transform, transform1);
 
     const minRangeDuration = 0.00027 * 31536000000;
-    this.xScale.domain([this.eventGroups[0].dateTime.getTime(),
-      this.eventGroups[0].dateTime.getTime() + minRangeDuration]);
+    // this.xScale.domain([this.eventGroups[0].dateTime.getTime(),
+    //   this.eventGroups[0].dateTime.getTime() + minRangeDuration]);
 
     if (this.data.events.length < 2) {
       if (this.eventGroups.length > 0) {
@@ -287,7 +286,7 @@ export class TimelineComponent implements OnInit, OnChanges {
 
 
         // only 1 event make sure its visible
-        this.onZoomChanged(3600);
+        this.onZoomChanged(720000);
         setTimeout(() => {
           this.centerEvent(this.eventGroups[0]);
         }, 700);
@@ -301,7 +300,7 @@ export class TimelineComponent implements OnInit, OnChanges {
     const min = d3.min(this.data.events, (e: TimelineEventGroup) => e.dateTime);
     const max = d3.max(this.data.events, (e: TimelineEventGroup) => e.dateTime);
 
-    const rangeDuration = Math.max(2 * minRangeDuration, max.getTime() - min.getTime());
+    const rangeDuration = Math.max(4 * minRangeDuration, max.getTime() - min.getTime());
     const paddingDuration = Math.floor(rangeDuration / 10);
 
 
@@ -310,7 +309,7 @@ export class TimelineComponent implements OnInit, OnChanges {
     // this.centerEvent(this.eventGroups[0]);
     const averageDate = new Date(newMax.getTime() / 2 + newMin.getTime() / 2);
 
-    this.onZoomChanged(rangeDuration / 1000);
+    this.onZoomChanged(rangeDuration / 5000);
 
     setTimeout(() => {
 
