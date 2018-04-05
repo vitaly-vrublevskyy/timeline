@@ -4,19 +4,9 @@
   display: flex;
   align-items: center;
   position: relative;
-  &:before {
-    content: 'TIMELINE';
-    color: $blue;
-    position: absolute;
-    top: 0px;
-    left: 20px;
-    font-size: 11px;
-    font-family: Arial;
-  }
 
   .d3-timeline {
     flex: 1;
-    height: 120px;
     background: #fff;
   }
 

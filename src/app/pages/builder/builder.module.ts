@@ -1,15 +1,15 @@
-import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { BuilderComponent } from './builder.component';
-import { BuilderRoutingModule } from './builder-routing.module';
-import { GenericModule } from '../../generic/generic.module';
-import { TimelineService } from './service/timeline.service';
+import {NgModule} from "@angular/core";
+import {CommonModule} from "@angular/common";
+import {BuilderComponent} from "./builder.component";
+import {BuilderRoutingModule} from "./builder-routing.module";
+import {TimelineService} from "./service/timeline.service";
+import {TnTimelineModule} from "../../generic/tn-timeline.module";
 
 @NgModule({
   imports: [
     CommonModule,
     BuilderRoutingModule,
-    GenericModule
+    TnTimelineModule
   ],
   declarations: [BuilderComponent],
   providers: [TimelineService]

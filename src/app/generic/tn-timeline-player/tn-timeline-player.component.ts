@@ -5,12 +5,12 @@ import {Subscription} from 'rxjs/Subscription';
 import * as _ from 'lodash';
 
 @Component({
-  selector: 'app-player',
-  templateUrl: './player.component.html',
-  styleUrls: ['./player.component.scss'],
+  selector: 'tn-timepline-player',
+  templateUrl: './tn-timeline-player.component.html',
+  styleUrls: ['./tn-timeline-player.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class PlayerComponent implements OnDestroy {
+export class TnTimelinePlayerComponent implements OnDestroy {
 
   @Input()
   events: TimelineEventGroup[];
@@ -20,10 +20,10 @@ export class PlayerComponent implements OnDestroy {
   * */
   @Output()
   change: EventEmitter<number> = new EventEmitter<number>();
-  
+
   @Output()
   endPlaying: EventEmitter<void> = new EventEmitter();
-  
+
   /*
   * Select Event using prev or next buttons
   * */
@@ -48,21 +48,21 @@ export class PlayerComponent implements OnDestroy {
     return this.speedMultipliersList[this.speedIndex];
   }
 
-  
+
   get selectedEventIndex (): number {
     return _.findIndex(this.events, {selected: true});
   }
-  
-  
+
+
   get isLastPoint(): boolean {
     return this.needleIndex === this.events.length - 1;
   }
-  
+
   /**
    * Player related properties
    * */
   private playbackSubscription: Subscription;
-  
+
 
   ngOnDestroy() {
     // Unsubscribe timer
@@ -94,14 +94,14 @@ export class PlayerComponent implements OnDestroy {
       .take(times)
       .subscribe(index => this.handlePlayback(index + offset, times));
   }
-  
+
   convertSpeedIntoMilliseconds(speed: number): number {
     if (speed < 0) {
       speed = Math.abs(1 / speed);
     }
     return 1000 / speed;
   }
-  
+
   /*
   * Needle Position
   * */

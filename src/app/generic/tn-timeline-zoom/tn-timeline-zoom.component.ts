@@ -7,12 +7,12 @@ interface Option {
 }
 
 @Component({
-  selector: 'app-zoom',
-  templateUrl: './zoom.component.html',
-  styleUrls: ['./zoom.component.scss'],
+  selector: 'tn-timeline-zoom',
+  templateUrl: './tn-timeline-zoom.component.html',
+  styleUrls: ['./tn-timeline-zoom.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class ZoomComponent implements OnChanges {
+export class TnTimelineZoomComponent implements OnChanges {
 
   /**
    *  Zoom level in seconds
@@ -31,7 +31,7 @@ export class ZoomComponent implements OnChanges {
   /**
    *  Mapping with whole available Time Scale Level with appropriate values in seconds
    *  */
-  private zoomLevels: Option[] = [
+  static zoomLevels: Option[] = [
     {value: 1, displayValue: '1 Second'},
     {value: 10, displayValue: '10 Seconds'},
     {value: 15, displayValue: '15 Seconds'},
@@ -56,7 +56,7 @@ export class ZoomComponent implements OnChanges {
    * @Return One of the option from zoomLevels map
    * */
   get zoomLevel(): Option {
-    return this.zoomLevels[this.zoomIndex];
+    return TnTimelineZoomComponent.zoomLevels[this.zoomIndex];
   }
 
   get isMinZoomLevel(): boolean {
@@ -64,21 +64,21 @@ export class ZoomComponent implements OnChanges {
   }
 
   get isMaxZoomLevel(): boolean {
-    return this.zoomIndex === this.zoomLevels.length - 1;
+    return this.zoomIndex === TnTimelineZoomComponent.zoomLevels.length - 1;
   }
 
   get zoomLevelPercentage(): number {
-    return (this.zoomIndex / (this.zoomLevels.length - 1)) * 100;
+    return (this.zoomIndex / (TnTimelineZoomComponent.zoomLevels.length - 1)) * 100;
   }
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['zoom'] && changes['zoom'].currentValue) {
-      this.zoomIndex = _.findIndex(this.zoomLevels, {value: this.zoom});
+      this.zoomIndex = _.findIndex(TnTimelineZoomComponent.zoomLevels, {value: this.zoom});
     }
   }
 
   zoomIn() {
-    if (this.zoomIndex < this.zoomLevels.length - 1) {
+    if (this.zoomIndex < TnTimelineZoomComponent.zoomLevels.length - 1) {
       this.zoomIndex++;
       this.zoomChange.emit(this.zoomLevel.value);
     }
