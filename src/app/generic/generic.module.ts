@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { TimelineComponent } from './timeline/timeline.component';
 import { PlayerComponent } from './player/player.component';
 import { ZoomComponent } from './zoom/zoom.component';
+import { TimelineVisComponent } from './timeline-vis/timeline-vis.component';
 
 @NgModule({
   imports: [
@@ -11,10 +12,12 @@ import { ZoomComponent } from './zoom/zoom.component';
   declarations: [
     PlayerComponent,
     TimelineComponent,
-    ZoomComponent
+    ZoomComponent,
+    TimelineVisComponent,
   ],
   exports: [
-    TimelineComponent
+    TimelineVisComponent,
+    TimelineComponent,
   ]
 })
 export class GenericModule { }

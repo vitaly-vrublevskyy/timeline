@@ -24,14 +24,15 @@
   </div>
 
   <!-- Timeline Component -->
-  <app-timeline
+  <app-timeline-vis></app-timeline-vis>
+  <!--app-timeline
     [data]="timelineData"
     (select)="onSelectEvent($event)"
     (unselect)="onUnSelectEvent($event)"
     (hoverIn)="onHoverInEvent($event)"
     (hoverOut)="onHoverOutEvent($event)"
     class="timeline">
-  </app-timeline>
+  </app-timeline-->
 </div>
 
 <button (click)="datasetclick(0)">dataset0</button>
