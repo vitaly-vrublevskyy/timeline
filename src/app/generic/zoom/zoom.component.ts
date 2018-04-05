@@ -44,11 +44,10 @@ export class ZoomComponent implements OnChanges {
     {value: 12 * 60 * 60, displayValue: '12 Hour'},
     {value: 24 * 60 * 60, displayValue: '1 Day'},
     {value: 7 * 24 * 60 * 60, displayValue: '1 Week'},
-    {value: 4 * 7 * 24 * 60 * 60, displayValue: '1 Month'},
-    {value: 31556926, displayValue: '1 Year'},
-    {value: 31556926 * 5, displayValue: '5 Years'}
+    {value: 30 * 24 * 60 * 60, displayValue: '1 Month'},
+    {value: 365 * 24 * 60 * 60, displayValue: '1 Year'},
+    {value: 5 * 365 * 24 * 60 * 60, displayValue: '5 Years'}
   ].reverse();
-
 
 
   /**

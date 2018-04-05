@@ -1,6 +1,7 @@
 import {Component, OnInit, ViewEncapsulation} from '@angular/core';
 import * as vis from 'vis';
 import * as _ from 'lodash';
+import * as moment from 'moment';
 
 @Component({
   selector: 'app-timeline-vis',
@@ -15,7 +16,7 @@ export class TimelineVisComponent implements OnInit {
   ngOnInit() {
 
     // create a dataset with items
-    // note that months are zero-based in the JavaScript Date object, so month 3 is April
+    // note that months are zero-based in the JavaScript Datevitaly-vrublevskyy object, so month 3 is April
     const items = new vis.DataSet(this.mock());
 
     // create visualization
@@ -24,12 +25,39 @@ export class TimelineVisComponent implements OnInit {
       editable: false,
       maxHeight: '354px',
       horizontalScroll: true,
-      showCurrentTime: false
+      showCurrentTime: false,
+      format: {
+        minorLabels: this.formatAxis
+      }
     };
 
     this.timeline = new vis.Timeline(container);
     this.timeline.setOptions(options);
     this.timeline.setItems(items);
+  }
+
+  formatAxis(date, scale, step) {
+    const d = moment(date);
+    switch (scale) {
+      case 'millisecond':
+        return d.format('SSS');
+      case 'second':
+        return d.format('ss');
+      case 'minute':
+        return d.format('h:mm a');
+      case 'hour':
+        return d.format('h:mm a');
+      case 'day':
+        return d.format('D MMM');
+      case 'weekday':
+        return d.format('D MMM');
+      case 'month':
+        return d.format('MMM');
+      case 'year':
+        return d.format('YYYY');
+      default:
+        return d.format();
+    }
   }
 
   mock() {
@@ -38,8 +66,9 @@ export class TimelineVisComponent implements OnInit {
       a.push({
         id: +_.uniqueId(),
         content: '',
+        title: 'Normal text',
         start: new Date(2018, Math.floor(Math.random() * 12), 1 + Math.floor(Math.random() * 29), Math.floor(Math.random() * 24)),
-        className: ['radius-5'],
+        className: 'radius-5',
         type: 'point',
         visible: false
       });
