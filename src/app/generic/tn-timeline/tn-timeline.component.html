@@ -2,7 +2,9 @@
 
   <div id="visualization" class="d3-timeline"></div>
 
-  <!--[(zoom)]="zoomLevel"-->
-  <!--(zoomChange)="onZoomChanged($event)"-->
-  <tn-timeline-zoom #zoomControl class="zoom"></tn-timeline-zoom>
+  <tn-timeline-zoom #zoomControl
+      [(zoom)]="zoomLevel"
+      (zoomChange)="onZoomChanged($event)"
+      class="zoom">
+  </tn-timeline-zoom>
 </div>

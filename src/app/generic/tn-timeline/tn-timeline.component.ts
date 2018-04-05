@@ -1,4 +1,4 @@
-import {Component, Input, OnInit, ViewEncapsulation} from "@angular/core";
+import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewEncapsulation} from "@angular/core";
 import * as vis from 'vis';
 import * as _ from 'lodash';
 import {TnTimelineZoomComponent} from "../tn-timeline-zoom/tn-timeline-zoom.component";
@@ -9,10 +9,25 @@ import {TnTimelineZoomComponent} from "../tn-timeline-zoom/tn-timeline-zoom.comp
   styleUrls: ['./tn-timeline.component.scss'],
   encapsulation: ViewEncapsulation.None
 })
-export class TnTimelineComponent implements OnInit {
+export class TnTimelineComponent implements OnInit, OnDestroy {
+
 
   @Input()
   public showPlayer: boolean;
+
+  @Output()
+  select: EventEmitter<string[]> = new EventEmitter();
+
+  @Output()
+  unselect: EventEmitter<string[]> = new EventEmitter();
+
+  @Output()
+  hoverIn: EventEmitter<string[]> = new EventEmitter();
+
+  @Output()
+  hoverOut: EventEmitter<string[]> = new EventEmitter();
+
+  zoomLevel: number; // in seconds
 
   private timeline: any;
 
@@ -61,7 +76,6 @@ export class TnTimelineComponent implements OnInit {
   }
 
   ngOnInit() {
-
     // create a dataset with items
     const items = new vis.DataSet(this.mock());
 
@@ -69,10 +83,12 @@ export class TnTimelineComponent implements OnInit {
     const container = document.getElementById('visualization');
     const options = {
       editable: false,
+      zoomKey: 'ctrlKey',
       height: '95px',
       maxHeight: '354px',
-      // min: _.min(this.zoomLevelValues),
-      // max: _.max(this.zoomLevelValues),
+      min: new Date(2000, 0, 1),    // lower limit of visible
+      zoomMin: 1000, //_.min(this.zoomLevelValues) * 1000,
+      // zoomMax: _.max(this.zoomLevelValues) * 1000,
       horizontalScroll: true,
       showCurrentTime: false,
       format: {
@@ -84,15 +100,28 @@ export class TnTimelineComponent implements OnInit {
     this.timeline = new vis.Timeline(container);
     this.timeline.setOptions(options);
     this.timeline.setItems(items);
+
+    this.timeline.on('rangechanged',  (properties) => this.onRangeChanged(properties));
+
   }
 
+  ngOnDestroy(): void {
+  }
+
+  /**
+   * API methods
+   * */
+  selectEvent(ids: string[]) {
+    // Set Selection
+    //this.timeline.setSelection(ids, {focus: focus.checked});
+  }
 
 
   /**
    * Move the timeline a given percentage to left or right
    * @param {Number} percentage   For example 0.1 (left) or -0.1 (right)
    */
-  move(percentage) {
+  move(percentage: number) {
     const range = this.timeline.getWindow();
     const interval = range.end - range.start;
 
@@ -102,11 +131,12 @@ export class TnTimelineComponent implements OnInit {
     });
   }
 
+
   /**
    * Zoom the timeline a given percentage in or out
    * @param {Number} percentage   For example 0.1 (zoom out) or -0.1 (zoom in)
    */
-  zoom(percentage) {
+  zoom(percentage: number) {
     const range = this.timeline.getWindow();
     const interval = range.end - range.start;
 
@@ -116,6 +146,17 @@ export class TnTimelineComponent implements OnInit {
     });
   }
 
-  // BoxItem.prototype.repositionY
+  /* Event Listeners */
+  // sync zoomLevel in sec into this.timeline.setWindow({start:, end:});
+  onZoomChanged(zoomLevel: number) {
 
+  }
+
+  onRangeChanged(properties): void {
+    console.log("Range", properties);
+  }
+
+  //FIXME: BoxItem.prototype.repositionY
 }
+
+
