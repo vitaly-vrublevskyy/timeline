@@ -46,15 +46,19 @@ export class BuilderComponent implements OnInit {
     this.timeline.addEvents(this.mock(3));
   }
 
-  mock(count: number = 10) {
+  mock(count: number = 10, years: boolean = false, hours: boolean = false, second: boolean = false) {
     const a = [];
     for (let i = 0; i < count; i++) {
-      const month: number = Math.floor(Math.random() * 12);
-      const day: number = 1 + Math.floor(Math.random() * 29);
-      const hour: number = Math.floor(Math.random() * 24);
-      const min: number = Math.floor(Math.random() * 60);
-      const sec: number = Math.floor(Math.random() * 60);
-      const date: Date = new Date(2018, month, day, hour, min, sec);
+      const date: Date = new Date();
+      date.setSeconds(Math.floor(Math.random() * 60));
+      if (!second) {
+        if (hours) {
+          date.setHours(Math.floor(Math.random() * 24));
+        } else {
+          date.setFullYear(2010 + Math.floor(Math.random() * 18), Math.floor(Math.random() * 12), Math.floor(Math.random() * 9));
+        }
+      }
+
 
       a.push({
         id: +_.uniqueId(),
@@ -109,7 +113,13 @@ export class BuilderComponent implements OnInit {
   }
 
   datasetclick(option: number) {
-    this.timelineData = this.service['data' + option];
+    if (option === 0) {
+      this.timeline.setData(this.mock(10, true));
+    } else if (option === 1) {
+      this.timeline.setData(this.mock(10, false, true));
+    } else {
+      this.timeline.setData(this.mock(10, false, false, true));
+    }
   }
 
   private logInfo(message: string) {

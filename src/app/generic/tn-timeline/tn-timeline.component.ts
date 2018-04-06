@@ -86,12 +86,12 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
   }
 
   public setData(items: any[]) {
-    this.dataSet.add(items);
     if (this.timeline) {
+      this.dataSet.clear();
       this.timeline.destroy();
     }
 
-    // const container = document.getElementById('timeline');
+    this.dataSet.add(items);
     this.timeline = new vis.Timeline(this.container.nativeElement, this.dataSet, this.options);
     this.handleTimelineEvents();
   }
