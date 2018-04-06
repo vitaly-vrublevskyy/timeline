@@ -14,8 +14,8 @@ import { TimelineDataVM, TimelineEventGroup, TimelineEventVM } from '../../model
 import * as d3 from 'd3';
 import * as _ from 'lodash';
 import * as Color from 'color';
-import { PlayerComponent } from '../player/player.component';
 import * as moment from 'moment';
+import {TnTimelinePlayerComponent} from "../tn-timeline-player/tn-timeline-player.component";
 
 const format = d3.timeFormat('%d %b %Y %H:%M:%S');
 
@@ -83,7 +83,7 @@ export class TimelineComponent implements OnInit, OnChanges {
   /*
   * Access to View Template
   * */
-  @ViewChild(PlayerComponent) private player: PlayerComponent;
+  @ViewChild(TnTimelinePlayerComponent) private player: TnTimelinePlayerComponent;
   @ViewChild('container') private chartContainer: ElementRef;
   @ViewChild('svg') private svgElement: ElementRef;
   /*

@@ -63,7 +63,7 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
     editable: false,
     zoomKey: 'ctrlKey',
     height: '94px',
-    maxHeight: '354px',
+    maxHeight: '94px',
     min: new Date(2010, 0, 1),    // lower limit of visible
     max: new Date(2025, 0, 1),    // up limit of visible
     zoomMin: 10 * 1000, // 1 sec
@@ -173,18 +173,6 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
   /**
    * Private
    * */
-  /* Convert external model into timeline internal model */
-
-/*  adapter(alerts: SecurityAlertFullDM[]): TimelineEventVM[] {
-    return _.chain(alerts)
-      .map(alert => alert.securityEventCards)
-      .flatten()
-      .uniqBy('eventId') // 'dateTime'
-      .map((dataSet: SecurityEventCardDM) => new TimelineEventVM(dataSet))
-      .orderBy('dateTime')
-      .value();
-  }*/
-
 
   private handleTimelineEvents() {
     /* Select */
@@ -207,8 +195,6 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
   private onRangeChanged(properties): void {
     // TODO: handle zoom: console.log("Range", properties);
   }
-
-  //FIXME: BoxItem.prototype.repositionY
 }
 
 
