@@ -76,7 +76,7 @@ export class BuilderComponent implements OnInit {
       .map(item => item.id)
       .filter((item, index: number) => index % 2 === 1);
 
-    this.timeline.selectEvents(ids);
+    this.timeline.selectEvents(...ids);
   }
 
   forceUnSelectEvenEvent() {
