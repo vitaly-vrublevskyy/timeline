@@ -2,6 +2,7 @@ import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewEncapsula
 import * as vis from 'vis';
 import * as _ from 'lodash';
 import {TnTimelineZoomComponent} from "../tn-timeline-zoom/tn-timeline-zoom.component";
+import {log} from "util";
 
 @Component({
   selector: 'tn-timeline-component',
@@ -44,77 +45,84 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
   };
 
   private majorLabels =  {
-    millisecond:'HH:mm:ss',
-    second:     'D MMMM HH:mm',
-    minute:     'ddd D MMMM',
-    hour:       'ddd D MMMM',
-    weekday:    'MMMM YYYY',
-    day:        'MMMM YYYY',
-    week:       'MMMM YYYY',
+    millisecond:'h:mm:ss a',
+    second:     'D MMM h:mm a',
+    minute:     'ddd D MMM',
+    hour:       'ddd D MMM',
+    weekday:    'MMM YYYY',
+    day:        'MMM YYYY',
+    week:       'MMM YYYY',
     month:      'YYYY',
     year:       ''
   };
 
+  private options = {
+    editable: false,
+    zoomKey: 'ctrlKey',
+    height: '95px',
+    maxHeight: '354px',
+    min: new Date(2010, 0, 1),    // lower limit of visible
+    max: new Date(2025, 0, 1),    // up limit of visible
+    zoomMin: 10 * 1000, // 1 sec
+    // zoomMax: _.max(this.zoomLevelValues) * 1000,
+    horizontalScroll: true,
+    showCurrentTime: false,
+    multiselect: true,
+    format: {
+      minorLabels: this.minorLabels,
+      majorLabels: this.majorLabels
+    }
+  };
+
   private zoomLevelValues = TnTimelineZoomComponent.zoomLevels.map(item => item.value);
 
-  mock() {
-    const a = [];
-    for (let i = 1; i < 10; i++) {
-      a.push({
-        id: +_.uniqueId(),
-        content: '',
-        title: 'Normal text',
-        start: new Date(2018, Math.floor(Math.random() * 12), 1 + Math.floor(Math.random() * 29), Math.floor(Math.random() * 24)),
-        className: 'radius-5',
-        type: 'point',
-        visible: false
-      });
-
-    }
-    return a;
-
-  }
+  private data: vis.DataSet;
 
   ngOnInit() {
-    // create a dataset with items
-    const items = new vis.DataSet(this.mock());
-
     // create visualization
-    const container = document.getElementById('visualization');
-    const options = {
-      editable: false,
-      zoomKey: 'ctrlKey',
-      height: '95px',
-      maxHeight: '354px',
-      min: new Date(2000, 0, 1),    // lower limit of visible
-      zoomMin: 1000, //_.min(this.zoomLevelValues) * 1000,
-      // zoomMax: _.max(this.zoomLevelValues) * 1000,
-      horizontalScroll: true,
-      showCurrentTime: false,
-      format: {
-        minorLabels: this.minorLabels,
-        majorLabels: this.majorLabels
-      }
-    };
-
-    this.timeline = new vis.Timeline(container);
-    this.timeline.setOptions(options);
-    this.timeline.setItems(items);
-
-    this.timeline.on('rangechanged',  (properties) => this.onRangeChanged(properties));
-
+    this.data = new vis.DataSet();
   }
 
-  ngOnDestroy(): void {
+  public setData(items: any[]) {
+    this.data.add(items);
+    if (this.timeline) {
+      this.timeline.destroy();
+    }
+
+    const container = document.getElementById('timeline');
+    this.timeline = new vis.Timeline(container, this.data, this.options);
+    this.handleTimelineEvents();
   }
+
 
   /**
    * API methods
    * */
-  selectEvent(ids: string[]) {
-    // Set Selection
-    //this.timeline.setSelection(ids, {focus: focus.checked});
+
+  public addEvents(items: any) {
+    // TODO: adapter
+    this.data.add(items);
+    this.timeline.fit();
   }
+
+  public removeEvents(ids: number[]) {
+    this.data.remove(ids);
+    this.timeline.fit();
+  }
+
+  public selectEvents(ids: number[]) {
+    this.timeline.setSelection(ids, {focus: true});
+  }
+
+  public resetSelection() {
+    this.timeline.setSelection([]);
+  }
+
+
+  ngOnDestroy(): void {
+    this.timeline.destroy();
+  }
+
 
 
   /**
@@ -147,13 +155,22 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
   }
 
   /* Event Listeners */
-  // sync zoomLevel in sec into this.timeline.setWindow({start:, end:});
   onZoomChanged(zoomLevel: number) {
-
+    // sync zoomLevel in sec into this.timeline.setWindow({start:, end:});
   }
 
+  /**
+   * Private
+   * */
+  private handleTimelineEvents() {
+    this.timeline.on('rangechanged', (properties: any) => this.onRangeChanged(properties));
+    this.timeline.on('select', (properties: any) => this.select.emit(properties.items));
+  }
+
+
+
   onRangeChanged(properties): void {
-    console.log("Range", properties);
+    // TODO: handle zoom: console.log("Range", properties);
   }
 
   //FIXME: BoxItem.prototype.repositionY

@@ -177,6 +177,7 @@ export class TimelineService {
 
 
   dataSource(): Observable<TimelineDataVM> {
-    return Observable.of(this.data0);
+    return Observable.of(this.data0)
+      .delay(1000);
   }
 }

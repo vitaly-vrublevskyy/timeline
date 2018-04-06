@@ -3,6 +3,7 @@ import { TimelineService } from './service/timeline.service';
 import { TimelineDataVM } from '../../model/view-models';
 import * as _ from 'lodash';
 import { TimelineComponent } from '../../generic/timeline/timeline.component';
+import {TnTimelineComponent} from "../../generic/tn-timeline/tn-timeline.component";
 
 @Component({
   selector: 'app-builder',
@@ -16,7 +17,7 @@ export class BuilderComponent implements OnInit {
   /**
    * Data Source for timeline control
    * */
-  timelineData: TimelineDataVM;
+  timelineData: any; //TimelineDataVM;
   /**
    * Logger Info
    */
@@ -25,7 +26,7 @@ export class BuilderComponent implements OnInit {
   /*
   * Timeline component reference
   * */
-  @ViewChild(TimelineComponent) private timeline: TimelineComponent;
+  @ViewChild(TnTimelineComponent) private timeline: TnTimelineComponent;
   @ViewChild('scrollContent') private scrollContainer: ElementRef;
 
 
@@ -33,44 +34,53 @@ export class BuilderComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.timelineData = this.mock();
     this.service.dataSource()
-      .subscribe((model: TimelineDataVM) => this.timelineData = model);
+      .subscribe((model: TimelineDataVM) => this.timeline.setData(this.timelineData));
+
   }
 
   /*
   * Builder Event handlers (Util methods only for the demo achieved goals)
   * */
   onCreateEvent() {
-    const items = [
-      {
-        id: _.uniqueId(),
-        name: 'Dynamically added first event',
-        color: 'red',
-        dateTime: new Date('2016-12-05T00:00:00.000Z')
-      }, {
-        id: _.uniqueId(),
-        name: 'Dynamically second event',
-        color: 'red',
-        dateTime: new Date('2016-11-06T00:00:00.000Z')
-      }
-    ];
-    this.timeline.addEvents(items);
+    this.timeline.addEvents(this.mock(3));
+  }
+
+  mock(count: number = 10) {
+    const a = [];
+    for (let i = 1; i < count; i++) {
+      a.push({
+        id: +_.uniqueId(),
+        content: '',
+        title: 'Dynamically added first event',
+        start: new Date(2018, Math.floor(Math.random() * 12), 1 + Math.floor(Math.random() * 29), Math.floor(Math.random() * 24)),
+        className: 'radius-5',
+        type: 'point',
+        visible: false
+      });
+    }
+    return a;
   }
 
   onRemoveOddEvent() {
-    const ids: string[] = this.timelineData.events
+    const ids: number[] = this.timelineData
       .map(item => item.id)
-      .filter((item, index: number) => index % 2 === 1);
+      .filter((item, index: number) => index % 2 === 0);
 
     this.timeline.removeEvents(ids);
   }
 
   forceSelectEvent() {
-    this.timeline.selectEvent(['2', '7', '9']);
+    const ids: number[] = this.timelineData
+      .map(item => item.id)
+      .filter((item, index: number) => index % 2 === 1);
+
+    this.timeline.selectEvents(ids);
   }
 
   forceUnSelectEvenEvent() {
-    this.timeline.unselectEvent(['2', '7', '9']);
+    this.timeline.resetSelection();
   }
 
   /*
