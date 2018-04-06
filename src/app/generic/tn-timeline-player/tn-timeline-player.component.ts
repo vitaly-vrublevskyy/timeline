@@ -1,8 +1,7 @@
-import {Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewEncapsulation} from '@angular/core';
-import {TimelineEventGroup, TimelineEventVM} from '../../model/view-models';
-import {TimerObservable} from 'rxjs/observable/TimerObservable';
-import {Subscription} from 'rxjs/Subscription';
-import * as _ from 'lodash';
+import {Component, EventEmitter, Input, OnDestroy, Output, ViewEncapsulation} from "@angular/core";
+import {TimerObservable} from "rxjs/observable/TimerObservable";
+import {Subscription} from "rxjs/Subscription";
+import * as _ from "lodash";
 
 @Component({
   selector: 'tn-timepline-player',
@@ -13,19 +12,13 @@ import * as _ from 'lodash';
 export class TnTimelinePlayerComponent implements OnDestroy {
 
   @Input()
-  events: TimelineEventGroup[];
-
-  /*
-  * Change player cursor (needle)
-  * */
-  @Output()
-  change: EventEmitter<number> = new EventEmitter<number>();
+  events: any[]; //TimelineEventGroup[]; // TODO: Grouped
 
   @Output()
   endPlaying: EventEmitter<void> = new EventEmitter();
 
   /*
-  * Select Event using prev or next buttons
+  * Select Event id
   * */
   @Output()
   select: EventEmitter<number> = new EventEmitter<number>();
@@ -47,7 +40,6 @@ export class TnTimelinePlayerComponent implements OnDestroy {
   get speed(): number {
     return this.speedMultipliersList[this.speedIndex];
   }
-
 
   get selectedEventIndex (): number {
     return _.findIndex(this.events, {selected: true});
@@ -108,14 +100,14 @@ export class TnTimelinePlayerComponent implements OnDestroy {
   goToPrevious() {
     this.needleIndex = this.selectedEventIndex;
     if (this.needleIndex > 0) {
-      this.select.emit(--this.needleIndex);
+      this.sendNotification(--this.needleIndex);
     }
   }
 
   goToNext() {
     this.needleIndex = this.selectedEventIndex;
     if (this.needleIndex < this.events.length - 1) {
-      this.select.emit(++this.needleIndex);
+      this.sendNotification(++this.needleIndex);
     }
   }
 
@@ -147,8 +139,12 @@ export class TnTimelinePlayerComponent implements OnDestroy {
       this.endPlaying.emit();
     } else {
       this.needleIndex = nextNeedleIndex;
+      this.sendNotification(nextNeedleIndex);
     }
-    this.change.emit(nextNeedleIndex);
   }
 
+  private sendNotification(i: number) {
+    const eventId: number = this.events[i].id;
+    this.select.emit(eventId);
+  }
 }

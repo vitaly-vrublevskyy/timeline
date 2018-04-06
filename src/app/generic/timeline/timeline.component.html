@@ -4,12 +4,12 @@
 </div>
 
 <div class="timeline-component">
-  <app-player
+  <tn-timepline-player
     [events]="eventGroups"
     (change)="onHighlightPlayingEvent($event)"
     (select)="onSelectEventByIndex($event)"
     (endPlaying)="fitAllEvents()">
-  </app-player>
+  </tn-timepline-player>
 
   <div class="d3-timeline" #container>
     <svg #svg></svg>

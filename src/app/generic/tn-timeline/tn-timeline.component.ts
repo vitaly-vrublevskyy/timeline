@@ -12,21 +12,20 @@ import {log} from "util";
 })
 export class TnTimelineComponent implements OnInit, OnDestroy {
 
-
   @Input()
   public showPlayer: boolean;
 
   @Output()
-  select: EventEmitter<string[]> = new EventEmitter();
+  select: EventEmitter<number[]> = new EventEmitter();
 
   @Output()
-  unselect: EventEmitter<string[]> = new EventEmitter();
+  unselect: EventEmitter<number[]> = new EventEmitter();
 
   @Output()
-  hoverIn: EventEmitter<string[]> = new EventEmitter();
+  hoverIn: EventEmitter<number> = new EventEmitter();
 
   @Output()
-  hoverOut: EventEmitter<string[]> = new EventEmitter();
+  hoverOut: EventEmitter<number> = new EventEmitter();
 
   zoomLevel: number; // in seconds
 
@@ -67,7 +66,7 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
     // zoomMax: _.max(this.zoomLevelValues) * 1000,
     horizontalScroll: true,
     showCurrentTime: false,
-    multiselect: true,
+    //multiselect: true,
     format: {
       minorLabels: this.minorLabels,
       majorLabels: this.majorLabels
@@ -94,13 +93,11 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
     this.handleTimelineEvents();
   }
 
-
   /**
    * API methods
    * */
 
-  public addEvents(items: any) {
-    // TODO: adapter
+  public addEvents(items: any[]) {
     this.data.add(items);
     this.timeline.fit();
   }
@@ -112,6 +109,7 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
 
   public selectEvents(ids: number[]) {
     this.timeline.setSelection(ids, {focus: true});
+    this.select.emit(ids);
   }
 
   public resetSelection() {
@@ -122,8 +120,6 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.timeline.destroy();
   }
-
-
 
   /**
    * Move the timeline a given percentage to left or right
@@ -142,7 +138,8 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
 
   /**
    * Zoom the timeline a given percentage in or out
-   * @param {Number} percentage   For example 0.1 (zoom out) or -0.1 (zoom in)
+   * @param {Number} percentage
+   * For example 0.1 (zoom out) or -0.1 (zoom in)
    */
   zoom(percentage: number) {
     const range = this.timeline.getWindow();
@@ -159,15 +156,40 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
     // sync zoomLevel in sec into this.timeline.setWindow({start:, end:});
   }
 
+  onSelectEventByIndex(id: number) {
+    this.selectEvents([id]);
+  }
+
+  fitAllEvents() {
+    this.timeline.fit();
+  }
+
   /**
    * Private
    * */
+  /* Convert external model into timeline internal model */
+
+/*  adapter(alerts: SecurityAlertFullDM[]): TimelineEventVM[] {
+    return _.chain(alerts)
+      .map(alert => alert.securityEventCards)
+      .flatten()
+      .uniqBy('eventId')
+      .map((data: SecurityEventCardDM) => new TimelineEventVM(data))
+      .orderBy('dateTime')
+      .value();
+  }*/
+
+
   private handleTimelineEvents() {
-    this.timeline.on('rangechanged', (properties: any) => this.onRangeChanged(properties));
+    /* Select */
     this.timeline.on('select', (properties: any) => this.select.emit(properties.items));
+    /* Mouse Over */
+    this.timeline.on('itemover', (properties: any) => this.hoverIn.emit(properties.item));
+    /* Mouse Out */
+    this.timeline.on('itemout', (properties: any) => this.hoverOut.emit(properties.item));
+    /* Range Changed */
+    this.timeline.on('rangechanged', (properties: any) => this.onRangeChanged(properties));
   }
-
-
 
   onRangeChanged(properties): void {
     // TODO: handle zoom: console.log("Range", properties);

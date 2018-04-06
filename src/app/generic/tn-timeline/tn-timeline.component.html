@@ -1,4 +1,9 @@
 <div class="timeline-component">
+  <tn-timepline-player
+    [events]="data.get()"
+    (select)="onSelectEventByIndex($event)"
+    (endPlaying)="fitAllEvents()">
+  </tn-timepline-player>
 
   <div id="timeline" class="d3-timeline"></div>
 

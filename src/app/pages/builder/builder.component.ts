@@ -49,7 +49,7 @@ export class BuilderComponent implements OnInit {
 
   mock(count: number = 10) {
     const a = [];
-    for (let i = 1; i < count; i++) {
+    for (let i = 0; i < count; i++) {
       a.push({
         id: +_.uniqueId(),
         content: '',
@@ -60,7 +60,7 @@ export class BuilderComponent implements OnInit {
         visible: false
       });
     }
-    return a;
+    return _.orderBy(a, 'start');
   }
 
   onRemoveOddEvent() {
@@ -94,12 +94,12 @@ export class BuilderComponent implements OnInit {
     this.logInfo(`UnSelect Event: ${ids}`);
   }
 
-  onHoverInEvent(ids: string[]) {
-    this.logInfo(`Hover In: ${ids.join(', ')}`);
+  onHoverInEvent(id: string) {
+    this.logInfo(`Hover In: ${id}`);
   }
 
-  onHoverOutEvent(ids: string[]) {
-    this.logInfo(`Hover Out: ${ids.join(', ')}`);
+  onHoverOutEvent(id: string) {
+    this.logInfo(`Hover Out: ${id}`);
   }
 
   datasetclick(option: number) {
