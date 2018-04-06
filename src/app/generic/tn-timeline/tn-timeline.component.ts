@@ -1,8 +1,7 @@
 import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewEncapsulation} from "@angular/core";
-import * as vis from 'vis';
-import * as _ from 'lodash';
+import * as vis from "vis";
+import * as _ from "lodash";
 import {TnTimelineZoomComponent} from "../tn-timeline-zoom/tn-timeline-zoom.component";
-import {log} from "util";
 
 @Component({
   selector: 'tn-timeline-component',
@@ -107,7 +106,7 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
     this.timeline.fit();
   }
 
-  public selectEvents(ids: number[]) {
+  public selectEvents(...ids: number[]) {
     this.timeline.setSelection(ids, {focus: true});
     this.select.emit(ids);
   }
@@ -156,12 +155,14 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
     // sync zoomLevel in sec into this.timeline.setWindow({start:, end:});
   }
 
-  onSelectEventByIndex(id: number) {
-    this.selectEvents([id]);
+  onSelectEventById(id: number) {
+    this.unselectAll();
+    this.selectEvents(id);
   }
 
   fitAllEvents() {
     this.timeline.fit();
+    this.unselectAll()
   }
 
   /**
@@ -173,7 +174,7 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
     return _.chain(alerts)
       .map(alert => alert.securityEventCards)
       .flatten()
-      .uniqBy('eventId')
+      .uniqBy('eventId') // 'dateTime'
       .map((data: SecurityEventCardDM) => new TimelineEventVM(data))
       .orderBy('dateTime')
       .value();
@@ -191,7 +192,14 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
     this.timeline.on('rangechanged', (properties: any) => this.onRangeChanged(properties));
   }
 
-  onRangeChanged(properties): void {
+  private unselectAll() {
+    let ids: number[] = this.timeline.getSelection();
+    if (!_.isEmpty(ids)) {
+      this.unselect.emit(ids);
+    }
+  }
+
+  private onRangeChanged(properties): void {
     // TODO: handle zoom: console.log("Range", properties);
   }
 

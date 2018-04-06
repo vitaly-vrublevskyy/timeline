@@ -91,7 +91,7 @@ export class TnTimelinePlayerComponent implements OnDestroy {
     if (speed < 0) {
       speed = Math.abs(1 / speed);
     }
-    return 1000 / speed;
+    return 1.5 * 1000 / speed;
   }
 
   /*

@@ -1,7 +1,7 @@
 <div class="timeline-component">
   <tn-timepline-player
     [events]="data.get()"
-    (select)="onSelectEventByIndex($event)"
+    (select)="onSelectEventById($event)"
     (endPlaying)="fitAllEvents()">
   </tn-timepline-player>
 
