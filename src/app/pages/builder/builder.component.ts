@@ -37,7 +37,6 @@ export class BuilderComponent implements OnInit {
     this.timelineData = this.mock();
     this.service.dataSource()
       .subscribe((model: TimelineDataVM) => this.timeline.setData(this.timelineData));
-
   }
 
   /*
@@ -50,14 +49,21 @@ export class BuilderComponent implements OnInit {
   mock(count: number = 10) {
     const a = [];
     for (let i = 0; i < count; i++) {
+      const month: number = Math.floor(Math.random() * 12);
+      const day: number = 1 + Math.floor(Math.random() * 29);
+      const hour: number = Math.floor(Math.random() * 24);
+      const min: number = Math.floor(Math.random() * 60);
+      const sec: number = Math.floor(Math.random() * 60);
+      const date: Date = new Date(2018, month, day, hour, min, sec);
+
       a.push({
         id: +_.uniqueId(),
         content: '',
-        title: 'Dynamically added first event',
-        start: new Date(2018, Math.floor(Math.random() * 12), 1 + Math.floor(Math.random() * 29), Math.floor(Math.random() * 24)),
+        // title: 'Dynamically added first event',
+        start: date,
         className: 'radius-5',
         type: 'point',
-        visible: false
+        // visible: false
       });
     }
     return _.orderBy(a, 'start');

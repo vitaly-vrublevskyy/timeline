@@ -1,4 +1,5 @@
 @import "../timeline/timeline.component";
+@import "../../../styles/mixin";
 
 .timeline {
   font-family: sans-serif;
@@ -9,6 +10,7 @@
   border-color: #83A2BE !important;
   &.vis-selected {
     border-color: #1750ea !important;
+    transform: scale(1.25);
   }
 }
 
@@ -16,6 +18,9 @@
   &.radius-5 {
     border-radius: 5px;
     border-width: 5px;
+    &:hover {
+      @include animate-hover();
+    }
     //top: 20px !important;
   }
   &.radius-10 {
