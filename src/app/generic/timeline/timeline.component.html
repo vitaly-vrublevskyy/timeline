@@ -5,7 +5,7 @@
 
 <div class="timeline-component">
   <tn-timepline-player
-    [events]="eventGroups"
+    [items]="eventGroups"
     (change)="onHighlightPlayingEvent($event)"
     (select)="onSelectEventByIndex($event)"
     (endPlaying)="fitAllEvents()">

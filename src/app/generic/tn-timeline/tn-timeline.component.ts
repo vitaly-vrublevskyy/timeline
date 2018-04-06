@@ -1,4 +1,4 @@
-import {Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewEncapsulation} from "@angular/core";
+import {Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, ViewEncapsulation} from "@angular/core";
 import * as vis from "vis";
 import * as _ from "lodash";
 import {TnTimelineZoomComponent} from "../tn-timeline-zoom/tn-timeline-zoom.component";
@@ -25,6 +25,11 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
 
   @Output()
   hoverOut: EventEmitter<number> = new EventEmitter();
+
+  dataSet: vis.DataSet;
+
+  @ViewChild('timeline')
+  private container: ElementRef;
 
   zoomLevel: number; // in seconds
 
@@ -74,21 +79,20 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
 
   private zoomLevelValues = TnTimelineZoomComponent.zoomLevels.map(item => item.value);
 
-  private data: vis.DataSet;
 
   ngOnInit() {
     // create visualization
-    this.data = new vis.DataSet();
+    this.dataSet = new vis.DataSet();
   }
 
   public setData(items: any[]) {
-    this.data.add(items);
+    this.dataSet.add(items);
     if (this.timeline) {
       this.timeline.destroy();
     }
 
-    const container = document.getElementById('timeline');
-    this.timeline = new vis.Timeline(container, this.data, this.options);
+    // const container = document.getElementById('timeline');
+    this.timeline = new vis.Timeline(this.container.nativeElement, this.dataSet, this.options);
     this.handleTimelineEvents();
   }
 
@@ -97,12 +101,12 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
    * */
 
   public addEvents(items: any[]) {
-    this.data.add(items);
+    this.dataSet.add(items);
     this.timeline.fit();
   }
 
   public removeEvents(ids: number[]) {
-    this.data.remove(ids);
+    this.dataSet.remove(ids);
     this.timeline.fit();
   }
 
@@ -176,7 +180,7 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
       .map(alert => alert.securityEventCards)
       .flatten()
       .uniqBy('eventId') // 'dateTime'
-      .map((data: SecurityEventCardDM) => new TimelineEventVM(data))
+      .map((dataSet: SecurityEventCardDM) => new TimelineEventVM(dataSet))
       .orderBy('dateTime')
       .value();
   }*/

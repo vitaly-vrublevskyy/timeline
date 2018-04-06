@@ -12,7 +12,7 @@ import * as _ from "lodash";
 export class TnTimelinePlayerComponent implements OnDestroy {
 
   @Input()
-  events: any[]; //TimelineEventGroup[]; // TODO: Grouped
+  items: any[]; //TimelineEventGroup[]; // TODO: Grouped
 
   @Output()
   endPlaying: EventEmitter<void> = new EventEmitter();
@@ -37,6 +37,10 @@ export class TnTimelinePlayerComponent implements OnDestroy {
 
   private speedIndex = 4;
 
+  get events() {
+    return _.orderBy(this.items, 'start');
+  }
+
   get speed(): number {
     return this.speedMultipliersList[this.speedIndex];
   }
@@ -59,6 +63,7 @@ export class TnTimelinePlayerComponent implements OnDestroy {
   ngOnDestroy() {
     // Unsubscribe timer
     this.playbackSubscription.unsubscribe();
+    this.playbackSubscription = null;
   }
 
   /*
@@ -98,14 +103,12 @@ export class TnTimelinePlayerComponent implements OnDestroy {
   * Needle Position
   * */
   goToPrevious() {
-    this.needleIndex = this.selectedEventIndex;
     if (this.needleIndex > 0) {
       this.sendNotification(--this.needleIndex);
     }
   }
 
   goToNext() {
-    this.needleIndex = this.selectedEventIndex;
     if (this.needleIndex < this.events.length - 1) {
       this.sendNotification(++this.needleIndex);
     }
