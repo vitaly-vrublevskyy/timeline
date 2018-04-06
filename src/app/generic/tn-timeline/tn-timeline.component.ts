@@ -57,7 +57,7 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
   private options = {
     editable: false,
     zoomKey: 'ctrlKey',
-    height: '95px',
+    height: '94px',
     maxHeight: '354px',
     min: new Date(2010, 0, 1),    // lower limit of visible
     max: new Date(2025, 0, 1),    // up limit of visible
@@ -162,7 +162,8 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
 
   fitAllEvents() {
     this.timeline.fit();
-    this.unselectAll()
+    this.unselectAll();
+    this.timeline.setSelection([]);
   }
 
   /**
