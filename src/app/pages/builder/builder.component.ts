@@ -54,11 +54,13 @@ export class BuilderComponent implements OnInit {
       if (!second) {
         if (hours) {
           date.setHours(Math.floor(Math.random() * 24));
+        } else if (years) {
+          date.setFullYear(2010 + Math.floor(Math.random() * 18));
         } else {
-          date.setFullYear(2010 + Math.floor(Math.random() * 18), Math.floor(Math.random() * 12), Math.floor(Math.random() * 9));
+          date.setMinutes(Math.floor(Math.random() * 60));
+          date.setHours(Math.floor(Math.random() * 60));
         }
       }
-
 
       a.push({
         id: +_.uniqueId(),

@@ -10,6 +10,8 @@
   <tn-timeline-zoom #zoomControl
       [(zoom)]="zoomLevel"
       (zoomChange)="onZoomChanged($event)"
+      (zoomIn)="zoom(0.2)"
+      (zoomOut)="zoom(-0.2)"
       class="zoom">
   </tn-timeline-zoom>
 </div>

@@ -23,6 +23,12 @@ export class TnTimelineZoomComponent implements OnChanges {
   @Output()
   zoomChange: EventEmitter<number> = new EventEmitter<number>();
 
+  @Output()
+  zoomIn: EventEmitter<number> = new EventEmitter<number>();
+
+  @Output()
+  zoomOut: EventEmitter<number> = new EventEmitter<number>();
+
   /**
    * Active zoom index
    * */
@@ -77,17 +83,19 @@ export class TnTimelineZoomComponent implements OnChanges {
     }
   }
 
-  zoomIn() {
+  onZoomIn() {
     if (this.zoomIndex < TnTimelineZoomComponent.zoomLevels.length - 1) {
       this.zoomIndex++;
       this.zoomChange.emit(this.zoomLevel.value);
+      this.zoomIn.emit();
     }
   }
 
-  zoomOut() {
+  onZoomOut() {
     if (this.zoomIndex > 0) {
       this.zoomIndex--;
       this.zoomChange.emit(this.zoomLevel.value);
+      this.zoomOut.emit();
     }
   }
 }
