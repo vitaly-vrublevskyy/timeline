@@ -84,18 +84,24 @@ export class TnTimelineZoomComponent implements OnChanges {
   }
 
   onZoomIn() {
+    this.zoomIn.emit();
+  }
+
+  onZoomInOld() {
     if (this.zoomIndex < TnTimelineZoomComponent.zoomLevels.length - 1) {
       this.zoomIndex++;
       this.zoomChange.emit(this.zoomLevel.value);
-      this.zoomIn.emit();
     }
   }
 
   onZoomOut() {
+    this.zoomOut.emit();
+  }
+
+  onZoomOutOld() {
     if (this.zoomIndex > 0) {
       this.zoomIndex--;
       this.zoomChange.emit(this.zoomLevel.value);
-      this.zoomOut.emit();
     }
   }
 }

@@ -1,17 +1,18 @@
 <div class="timeline-component">
   <tn-timepline-player
     [items]="dataSet.get()"
+    [selectedEventIds]="timeline?.getSelection()"
     (select)="onSelectEventById($event)"
     (endPlaying)="fitAllEvents()">
   </tn-timepline-player>
 
-  <div #timeline class="d3-timeline"></div>
+  <div #timelineContainer class="d3-timeline"></div>
 
   <tn-timeline-zoom #zoomControl
       [(zoom)]="zoomLevel"
       (zoomChange)="onZoomChanged($event)"
-      (zoomIn)="zoom(0.2)"
-      (zoomOut)="zoom(-0.2)"
+      (zoomIn)="zoomIn(1)"
+      (zoomOut)="zoomOut(1)"
       class="zoom">
   </tn-timeline-zoom>
 </div>

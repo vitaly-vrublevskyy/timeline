@@ -2,6 +2,7 @@ import {Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, V
 import * as vis from "vis";
 import * as _ from "lodash";
 import {TnTimelineZoomComponent} from "../tn-timeline-zoom/tn-timeline-zoom.component";
+import {TimelineItem} from "vis";
 
 @Component({
   selector: 'tn-timeline-component',
@@ -26,14 +27,14 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
   @Output()
   hoverOut: EventEmitter<number> = new EventEmitter();
 
-  dataSet: vis.DataSet;
+  dataSet: vis.DataSet<TimelineItem>;
 
-  @ViewChild('timeline')
+  @ViewChild('timelineContainer')
   private container: ElementRef;
 
   zoomLevel: number; // in seconds
 
-  private timeline: any;
+  private timeline: vis.Timeline;
 
   private minorLabels =  {
     millisecond:'SSS',
@@ -70,7 +71,7 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
     // zoomMax: _.max(this.zoomLevelValues) * 1000,
     horizontalScroll: true,
     showCurrentTime: false,
-    //multiselect: true,
+    multiselect: true,
     format: {
       minorLabels: this.minorLabels,
       majorLabels: this.majorLabels
@@ -88,19 +89,23 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
   public setData(items: any[]) {
     if (this.timeline) {
       this.dataSet.clear();
-      this.timeline.destroy();
     }
-
+    // TODO: Adapter into TimelineItem
     this.dataSet.add(items);
-    this.timeline = new vis.Timeline(this.container.nativeElement, this.dataSet, this.options);
-    this.handleTimelineEvents();
+
+    if (this.timeline) {
+      this.timeline.fit({animation: {duration: 100, easingFunction: 'linear'}});
+    } else {
+      this.timeline = new vis.Timeline(this.container.nativeElement, this.dataSet, this.options);
+      this.handleTimelineEvents();
+    }
   }
 
   /**
    * API methods
    * */
 
-  public addEvents(items: any[]) {
+  public addEvents(items: TimelineItem[]) {
     this.dataSet.add(items);
     this.timeline.fit();
   }
@@ -142,17 +147,15 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
   /**
    * Zoom the timeline a given percentage in or out
    * @param {Number} percentage
-   * For example 0.1 (zoom out) or -0.1 (zoom in)
    */
-  zoom(percentage: number) {
-    const range = this.timeline.getWindow();
-    const interval = range.end - range.start;
-
-    this.timeline.setWindow({
-      start: range.start.valueOf() - interval * percentage,
-      end: range.end.valueOf() + interval * percentage
-    });
+  zoomIn(percentage: number) {
+    this.timeline.zoomIn(percentage);
   }
+
+  zoomOut(percentage: number) {
+    this.timeline.zoomOut(percentage);
+  }
+
 
   /* Event Listeners */
   onZoomChanged(zoomLevel: number) {
@@ -186,7 +189,7 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
   }
 
   private unselectAll() {
-    let ids: number[] = this.timeline.getSelection();
+    const ids: number[] = this.timeline.getSelection();
     if (!_.isEmpty(ids)) {
       this.unselect.emit(ids);
     }

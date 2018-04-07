@@ -2,6 +2,7 @@ import {Component, EventEmitter, Input, OnDestroy, Output, ViewEncapsulation} fr
 import {TimerObservable} from "rxjs/observable/TimerObservable";
 import {Subscription} from "rxjs/Subscription";
 import * as _ from "lodash";
+import {TimelineItem} from "vis";
 
 @Component({
   selector: 'tn-timepline-player',
@@ -12,14 +13,14 @@ import * as _ from "lodash";
 export class TnTimelinePlayerComponent implements OnDestroy {
 
   @Input()
-  items: any[]; //TimelineEventGroup[]; // TODO: Grouped
+  items: TimelineItem[]; // TODO: Grouped
+
+  @Input()
+  selectedEventIds: number[];
 
   @Output()
   endPlaying: EventEmitter<void> = new EventEmitter();
 
-  /*
-  * Select Event id
-  * */
   @Output()
   select: EventEmitter<number> = new EventEmitter<number>();
 
@@ -45,9 +46,6 @@ export class TnTimelinePlayerComponent implements OnDestroy {
     return this.speedMultipliersList[this.speedIndex];
   }
 
-  get selectedEventIndex (): number {
-    return _.findIndex(this.events, {selected: true});
-  }
 
 
   get isLastPoint(): boolean {
@@ -79,12 +77,17 @@ export class TnTimelinePlayerComponent implements OnDestroy {
     }
   }
 
-  startPlayer(speed: number = 1) {
+  startPlayer(speed: number = 1, offset: number = -1) {
     if (this.playbackSubscription) {
       this.playbackSubscription.unsubscribe();
     }
 
-    const offset: number = (this.selectedEventIndex !== -1) ? this.selectedEventIndex : 0;
+    if (offset === -1) {
+      const id: number = _.first(this.selectedEventIds);
+      const activeEventIndex: number = _.findIndex(this.events, {id: id});
+      offset = (activeEventIndex !== -1) ? activeEventIndex : 0;
+    }
+
     const times: number = (this.events.length - offset) + 1;
     const delay: number = this.convertSpeedIntoMilliseconds(speed);
     this.playbackSubscription = TimerObservable.create(0, delay)
@@ -118,17 +121,17 @@ export class TnTimelinePlayerComponent implements OnDestroy {
   * Speed
   * */
   increaseSpeed(): void {
-    if (this.speedIndex < this.speedMultipliersList.length) {
+    if (this.speedIndex < this.speedMultipliersList.length - 1) {
       this.speedIndex++;
+      this.startPlayer(this.speed, this.needleIndex);
     }
-    // TODO: invalidate current timer
   }
 
   decreaseSpeed(): void {
     if (this.speedIndex > 0) {
       this.speedIndex--;
+      this.startPlayer(this.speed, this.needleIndex);
     }
-    // TODO: invalidate current timer
   }
 
 

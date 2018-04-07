@@ -65,7 +65,7 @@ export class BuilderComponent implements OnInit {
       a.push({
         id: +_.uniqueId(),
         content: '',
-        // title: 'Dynamically added first event',
+        title: 'Some Tooltip Info',
         start: date,
         className: 'radius-5',
         type: 'point',
