@@ -3,6 +3,7 @@ import * as vis from "vis";
 import * as _ from "lodash";
 import {TnTimelineZoomComponent} from "../tn-timeline-zoom/tn-timeline-zoom.component";
 import {TimelineItem} from "vis";
+import {TimelineOptions} from "vis";
 
 @Component({
   selector: 'tn-timeline-component',
@@ -60,7 +61,7 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
     year:       ''
   };
 
-  private options = {
+  private options: TimelineOptions = {
     editable: false,
     zoomKey: 'ctrlKey',
     height: '94px',
@@ -196,7 +197,7 @@ export class TnTimelineComponent implements OnInit, OnDestroy {
   }
 
   private onRangeChanged(properties): void {
-    // TODO: handle zoom: console.log("Range", properties);
+    // console.log("Range", properties);
   }
 }
 

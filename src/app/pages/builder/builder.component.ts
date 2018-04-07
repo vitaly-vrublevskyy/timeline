@@ -65,7 +65,7 @@ export class BuilderComponent implements OnInit {
       a.push({
         id: +_.uniqueId(),
         content: '',
-        title: 'Some Tooltip Info',
+        // title: '<span style="color: red; font-size: 10px;">Red</span> <span style="font-size: 10px">text</span>',
         start: date,
         className: 'radius-5',
         type: 'point',
